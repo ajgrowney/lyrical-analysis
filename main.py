@@ -20,7 +20,7 @@ genius_api_call = {
     'base': 'https://api.genius.com'
 }
 
-verified_artists = json.load(open('artist-id.json'))
+verified_artists = json.load(open('art_id.json'))
 
 def lyric_analysis(song_lyrics):
     lyric_list = song_lyrics.split()
