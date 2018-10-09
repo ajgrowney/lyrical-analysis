@@ -20,6 +20,8 @@ genius_api_call = {
     'base': 'https://api.genius.com'
 }
 
+# Replace the filename with your own json object file if you have scraped lyrics
+# Provided are artist IDs 1-8000 in the art_id.json file
 verified_artists = json.load(open('art_id.json'))
 
 def lyric_analysis(song_lyrics):
