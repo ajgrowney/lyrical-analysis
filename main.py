@@ -22,9 +22,15 @@ genius_api_call = {
 
 # Replace the filename with your own json object file if you have scraped lyrics
 # Provided are artist IDs 1-8000 in the art_id.json file
-verified_artists = json.load(open('art_id.json'))
+if("verified_artists_path" in constants):
+    try:
+        verified_artists = json.load(open(constants["verified_artists_path"]))
+    except IOError:
+        verified_artists = False
+        print "Invalid Verified Artist Path"
 
 def lyric_analysis(song_lyrics):
+    song_lyrics = song_lyrics.lower()
     lyric_list = song_lyrics.split()
     [lyric.lower() for lyric in lyric_list]
     my_dict = {}
@@ -59,6 +65,9 @@ def get_song_info(song, artist):
 
 # Return: No return, only outputing song result
 def print_song_result(song_info):
+    if(verified_artists == False):
+        print "No verified artists to search with"
+        return
     if str(song_info['primary_artist']['id']) in verified_artists:
         try:
             print "** Song: "+ song_info['title'] + "**"
@@ -104,6 +113,9 @@ def analyze_song(song,artist):
         for hit in res['response']['hits']:
             if hit['type'] == 'song':
                 print_song_result(hit['result'])
+                if(verified_artists == False):
+                    print "Cannot analyze song with no verified artists"
+                    return
                 if(str(hit['result']['primary_artist']['id']) in verified_artists):
                     song_lyrics = scrape_lyrics(hit['result']['url'])
                     lyric_analysis(song_lyrics)
@@ -115,42 +127,36 @@ def analyze_song(song,artist):
 # Return: Array<Integers> errors- containing the numbers that had api error responses
 # Example: getArtistIdRange(1,1000, art_id.json)
 def getArtistIdRange(range_start,range_end,filename):
-    path = './'+filename
-    err_path = './err_'+filename
+    path = './id_results/'+filename
+    err_path = './id_errors/err_'+filename
+
     if os.path.isfile(path) and os.access(path,os.R_OK):
         print "We in"
-        artists = json.load(open(filename))
+        artists = json.load(open(path))
     else:
         artists = {}
+
     if os.path.isfile(err_path) and os.access(err_path,os.R_OK):
-        errors = json.load(open('err_'+filename))['errors']
+        errors = json.load(open(err_path))['errors']
     else:
         errors = []
+    
     time_start = time.time()
     with concurrent.futures.ProcessPoolExecutor() as executor:
       for i,id_obj in zip(range(int(range_start),int(range_end)), executor.map(getArtistId, range(int(range_start),int(range_end)))):
+        if i%((int(range_end)-(int(range_start)-1)) / 10) == 0:
+            print "Next: ", i
         if type(id_obj) == dict and id_obj['name'] != "":
             artists[i] = id_obj
         elif type(id_obj) == int:
             errors.append(i)
     
-    remaining = len(errors)
-    attempts = 0
-    while(remaining > 0 and attempts < 5):
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            for i, id_obj in zip(errors, executor.map(getArtistId,errors)):
-                if type(id_obj) == dict and id_obj['name'] != "":
-                    artists[i] = id_obj
-                    errors.remove(i)
-        remaining = len(errors)
-        attempts += 1
-        print len(errors), " Errors: ", errors
     time_end = time.time()
     print "Artist Id Object file saved as: ",filename
     print "Execution time: ", time_end-time_start, " seconds"
     print len(errors), "Errors remaining: ", errors
-    json.dump(artists, open(filename,"w"))
-    json.dump({"errors": errors}, open('err_'+filename, "w"))
+    json.dump(artists, open(path,"w"))
+    json.dump({"errors": errors}, open(err_path, "w"))
     return errors
 
 # Description: Supports two main calls as of now: 
