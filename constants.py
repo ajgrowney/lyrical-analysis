@@ -1,5 +1,5 @@
 constants = {
-    "apikey": "Enter Your Genius API Key Here",
-    "ignore": ["I", "a", "to", "and", "or", "And", "the", "me", "my", "I'm", "You", "you"],
+    "apikey": "EnterYourGeniusAPIKeyHere",
+    "ignore": ["i", "of", "for", "a", "to", "and", "or", "the", "me", "my", "i'm", "you"],
     "verified_artists_path": './id_results/art_id.json'
 }
