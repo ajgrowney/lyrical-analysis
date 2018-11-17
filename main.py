@@ -42,11 +42,11 @@ def lyric_analysis(song_lyrics):
             my_dict[item] = 1
     sorted_dict = sorted(my_dict.items(), key=operator.itemgetter(1), reverse=True)
     top_results = sorted_dict[:15]
-    for item in top_results:
-        try:
-            print item[0], ',', item[1]
-        except UnicodeEncodeError:
-            print "Error on character"
+    # for item in top_results:
+    #     try:
+    #         print item[0], ',', item[1]
+    #     except UnicodeEncodeError:
+    #         print "Error on character"
     return top_results
 
 # Return: string that holds all the lyrics text
@@ -131,26 +131,20 @@ def getArtistIdRange(range_start,range_end,filename):
     path = './id_results/'+filename
     err_path = './id_errors/err_'+filename
 
-    if os.path.isfile(path) and os.access(path,os.R_OK):
-        print "We in"
-        artists = json.load(open(path))
-    else:
-        artists = {}
+    artists = (json.load(open(path)) if(os.path.isfile(path) and os.access(path,os.R_OK)) else {} )
+    errors = (json.load(open(err_path))['errors'] if(os.path.isfile(err_path) and os.access(err_path,os.R_OK)) else [])
 
-    if os.path.isfile(err_path) and os.access(err_path,os.R_OK):
-        errors = json.load(open(err_path))['errors']
-    else:
-        errors = []
-    
     time_start = time.time()
     with concurrent.futures.ProcessPoolExecutor() as executor:
-      for i,id_obj in zip(range(int(range_start),int(range_end)), executor.map(getArtistId, range(int(range_start),int(range_end)))):
-        if i%((int(range_end)-(int(range_start)-1)) / 10) == 0:
-            print "Next: ", i
-        if type(id_obj) == dict and id_obj['name'] != "":
-            artists[i] = id_obj
-        elif type(id_obj) == int:
-            errors.append(i)
+        r_st = int(range_start)
+        r_end = int(range_end)
+        for i,id_obj in zip(range(r_st,r_end), executor.map(getArtistId, range(r_st,r_end))):
+            if i%((r_end-(r_st-1)) / 10) == 0:
+                print "Next: ", i
+            if type(id_obj) == dict and id_obj['name'] != "":
+                artists[i] = id_obj
+            elif type(id_obj) == int:
+                errors.append(i)
     
     time_end = time.time()
     print "Artist Id Object file saved as: ",filename
@@ -160,6 +154,29 @@ def getArtistIdRange(range_start,range_end,filename):
     json.dump({"errors": errors}, open(err_path, "w"))
     return errors
 
+
+# ------- In Progress -------------
+def integrateArtist(artNode):
+    url = genius_api_call['base']
+    headers = {'Authorization': 'Bearer ' + genius_api_call['token']}
+    print artNode.id
+    try:
+        res = requests.get(url+'/artists/'+str(artNode.id)+'/songs', headers=headers).json()
+        if res['meta']['status'] == 200:
+           for song in res['response']['songs']:
+                if song['primary_artist']['id'] == artNode.id:
+                    results = analyze_song(artNode.name,song['title'])
+                    for res_key, res_val in results:
+                        if res_key in artNode.adj_list:
+                            artNode.adj_list[res_key] += res_val
+                        else:
+                            artNode.adj_list[res_key] = res_val
+                    #print artNode.adj_list['in']
+    except requests.exceptions.HTTPError as e:
+        print e
+    return artNode
+    
+
 # Description: Supports two main calls as of now: 
 # Song Search Analysis: takes in a song and artist, prints out top fifteen most used lyrics with option to exclude certain words
 # Song Search Ex: python main.py 'search' "Element" "Kung Fu Kenny"
@@ -168,10 +185,13 @@ def getArtistIdRange(range_start,range_end,filename):
 def main():
     arg_len = len(sys.argv)
     user_input = sys.argv
-    if arg_len == 2 and user_input[1] == 'testObjectCreation':
-        new_art = ArtistNode('Test',1)
-        new_art.addConnection('Yo',3)
-        print new_art.getAdjList()
+
+    #----------In Progress---------
+    if arg_len == 3 and user_input[1] == 'addArtist':
+        artist_name = user_input[2]
+        new_art = ArtistNode(artist_name,7922)
+        integrateArtist(new_art)
+        print "Results: ",new_art.adj_list
 
     if arg_len == 4 and user_input[1] == 'search':
         song, artist = user_input[2], user_input[3]
