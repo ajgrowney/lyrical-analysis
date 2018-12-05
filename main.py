@@ -11,7 +11,6 @@ import time
 import requests
 import concurrent.futures
 from constants import constants
-from math import ceil
 from multiprocessing.pool import ThreadPool as Pool
 from bs4 import BeautifulSoup
 from Components.node import NodeInterface, ArtistNode, LyricNode
@@ -31,7 +30,7 @@ if("verified_artists_path" in constants):
         print "Invalid Verified Artist Path"
 
 def lyric_analysis(song_lyrics):
-    song_lyrics = song_lyrics.lower().replace(',','')
+    song_lyrics = song_lyrics.lower().replace(',','').replace('[','').replace(']','')
     lyric_list = song_lyrics.split()
     [lyric.lower() for lyric in lyric_list]
     my_dict = {}
@@ -42,6 +41,8 @@ def lyric_analysis(song_lyrics):
             my_dict[item] = 1
     sorted_dict = sorted(my_dict.items(), key=operator.itemgetter(1), reverse=True)
     top_results = sorted_dict[:15]
+
+    # --- For Individual Song Results ---
     # for item in top_results:
     #     try:
     #         print item[0], ',', item[1]
@@ -58,6 +59,26 @@ def scrape_lyrics(url):
     lyrics = inner_html.find('div', class_='lyrics').get_text()
     return lyrics
 
+def scrape_album(url):
+    album_results = {}
+    html_page = requests.get(url)
+    inner_html = BeautifulSoup(html_page.content, 'html.parser')
+    [el.extract() for el in inner_html('script')]
+    song_pages = inner_html.findAll('a', {"class": 'u-display_block'}, href=True)
+    song_urls = [s["href"] for s in song_pages]
+    for song in song_urls:
+        song_lyrics = scrape_lyrics(song)
+        results = (lyric_analysis(song_lyrics))
+        for res_key,res_val in results:
+            if res_key in album_results:
+                album_results[res_key] += res_val
+            else:
+                album_results[res_key] = res_val
+    sorted_album_results = []
+    for key, value in sorted(album_results.iteritems(), key=lambda (k,v): (v,k)):
+        sorted_album_results.append((key,value))
+    print sorted_album_results
+    
 # Return: Requests object, needs to be jsonified
 def get_song_info(song, artist):
     url = genius_api_call['base']
@@ -185,6 +206,9 @@ def integrateArtist(artNode):
 def main():
     arg_len = len(sys.argv)
     user_input = sys.argv
+
+    if arg_len == 2 and user_input[1] == 'scrapeAlbum':
+        scrape_album("https://genius.com/albums/Kendrick-lamar/Good-kid-m-a-a-d-city")
 
     #----------In Progress---------
     if arg_len == 3 and user_input[1] == 'addArtist':
