@@ -209,13 +209,16 @@ def main():
     user_input = sys.argv
 
     if arg_len == 2 and user_input[1] == 'scrapeAlbum':
-        new_art = ArtistNode("Kendrick Lamar",7922)
-        album_urls = ["Good-kid-m-a-a-d-city","To-pimp-a-butterfly"]
-        new_art.album_urls = album_urls        
-        for album in new_art.album_urls:
-            scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album)
-        #scrape_album("https://genius.com/albums/Kendrick-lamar/Good-kid-m-a-a-d-city")
-        #scrape_album("https://genius.com/albums/Kendrick-lamar/To-pimp-a-butterfly")
+        kendrick = {"name": "Kendrick Lamar", "id": 1421, "albums": ["Good-kid-m-a-a-d-city","To-pimp-a-butterfly"]}
+        jay = {"name": "Jay Z", "id": 2, "albums": ["4-44","Magna-carta-holy-grail"]}
+        joey = {"name": "Joey Bada$$", "id": 3, "albums": ["All-amerikkkan-bada"]}
+        art_list = [kendrick,jay,joey]
+        for artist in art_list: 
+         new_art = ArtistNode(artist["name"],artist["id"])
+         album_urls = artist["albums"]
+         new_art.album_urls = album_urls        
+         for album in new_art.album_urls:
+             scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album)
 
     #----------In Progress---------
     if arg_len == 3 and user_input[1] == 'addArtist':

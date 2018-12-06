@@ -8,7 +8,7 @@ class ArtistNode(NodeInterface):
         self.name = name_in
         self.id = id_in # Genius Artist ID
         self.adj_list = {}
-        self.album_search_str = name_in.replace(' ','-')
+        self.album_search_str = name_in.replace(' ','-').replace('$','')
         self.album_urls = []
         print "Creating artist node:",self.name, self.id
     
