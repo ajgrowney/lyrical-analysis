@@ -27,7 +27,7 @@ if("verified_artists_path" in constants):
         verified_artists = json.load(open(constants["verified_artists_path"]))
     except IOError:
         verified_artists = False
-        print "Invalid Verified Artist Path"
+        print("Invalid Verified Artist Path")
 
 def lyric_analysis(song_lyrics):
     song_lyrics = song_lyrics.lower().replace(',','').replace('[','').replace(']','')
@@ -77,7 +77,7 @@ def scrape_album(url):
     sorted_album_results = []
     for key, value in sorted(album_results.iteritems(), key=lambda (k,v): (v,k)):
         sorted_album_results.append((key,value))
-    print sorted_album_results
+    print(sorted_album_results)
     
 # Return: Requests object, needs to be jsonified
 def get_song_info(song, artist):
@@ -89,14 +89,14 @@ def get_song_info(song, artist):
 # Return: No return, only outputing song result
 def print_song_result(song_info):
     if(verified_artists == False):
-        print "No verified artists to search with"
+        print("No verified artists to search with")
         return
     if str(song_info['primary_artist']['id']) in verified_artists:
         try:
-            print "** Song: "+ song_info['title'] + "**"
-            print song_info['primary_artist']['name'] + "\n"
+            print("** Song: "+ song_info['title'] + "**")
+            print(song_info['primary_artist']['name'] + "\n")
         except UnicodeEncodeError:
-            print "Unicode Error"
+            print("Unicode Error")
 
 # Param: artist_in- Integer representing the artist id to make an api call for
 # Return type: Object if valid response, Integer if error
@@ -120,9 +120,9 @@ def getArtistId(artist_in):
     except requests.exceptions.SSLError:
         return artist_in
     except requests.exceptions.HTTPError as errh:
-        print errh
+        print(errh)
     except requests.exceptions.RetryError as erre:
-        print erre
+        print(erre)
     return res_obj
 
 # Param: song- song to query for searching
@@ -136,7 +136,7 @@ def analyze_song(song,artist):
             if hit['type'] == 'song':
                 print_song_result(hit['result'])
                 if(verified_artists == False):
-                    print "Cannot analyze song with no verified artists"
+                    print("Cannot analyze song with no verified artists")
                     return
                 if(str(hit['result']['primary_artist']['id']) in verified_artists):
                     song_lyrics = scrape_lyrics(hit['result']['url'])
@@ -161,16 +161,16 @@ def getArtistIdRange(range_start,range_end,filename):
         r_end = int(range_end)
         for i,id_obj in zip(range(r_st,r_end), executor.map(getArtistId, range(r_st,r_end))):
             if i%((r_end-(r_st-1)) / 10) == 0:
-                print "Next: ", i
+                print("Next: ", i)
             if type(id_obj) == dict and id_obj['name'] != "":
                 artists[i] = id_obj
             elif type(id_obj) == int:
                 errors.append(i)
     
     time_end = time.time()
-    print "Artist Id Object file saved as: ",filename
-    print "Execution time: ", time_end-time_start, " seconds"
-    print len(errors), "Errors remaining: ", errors
+    print( "Artist Id Object file saved as: ",filename)
+    print( "Execution time: ", time_end-time_start, " seconds")
+    print( len(errors), "Errors remaining: ", errors)
     json.dump(artists, open(path,"w"))
     json.dump({"errors": errors}, open(err_path, "w"))
     return errors
@@ -180,7 +180,7 @@ def getArtistIdRange(range_start,range_end,filename):
 def integrateArtist(artNode):
     url = genius_api_call['base']
     headers = {'Authorization': 'Bearer ' + genius_api_call['token']}
-    print artNode.id
+    print(artNode.id)
     try:
         res = requests.get(url+'/artists/'+str(artNode.id)+'/songs', headers=headers).json()
         if res['meta']['status'] == 200:
@@ -194,7 +194,7 @@ def integrateArtist(artNode):
                             artNode.adj_list[res_key] = res_val
                     #print artNode.adj_list['in']
     except requests.exceptions.HTTPError as e:
-        print e
+        print(e)
     return artNode
     
 
@@ -215,12 +215,12 @@ def main():
         artist_name = user_input[2]
         new_art = ArtistNode(artist_name,7922)
         integrateArtist(new_art)
-        print "Results: ",new_art.adj_list
+        print("Results: ",new_art.adj_list)
 
     if arg_len == 4 and user_input[1] == 'search':
         song, artist = user_input[2], user_input[3]
         lyric_dict = analyze_song(song,artist)
-        print lyric_dict
+        print(lyric_dict)
 
     elif arg_len == 5 and user_input[1] == 'artistId':
         getArtistIdRange(user_input[2],user_input[3],user_input[4])
