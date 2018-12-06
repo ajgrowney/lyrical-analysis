@@ -14,6 +14,7 @@ from constants import constants
 from multiprocessing.pool import ThreadPool as Pool
 from bs4 import BeautifulSoup
 from Components.node import NodeInterface, ArtistNode, LyricNode
+from Components.graph import GraphObj
 
 genius_api_call = {
     'token': constants["apikey"],
@@ -41,7 +42,6 @@ def lyric_analysis(song_lyrics):
             my_dict[item] = 1
     sorted_dict = sorted(my_dict.items(), key=operator.itemgetter(1), reverse=True)
     top_results = sorted_dict[:15]
-
     # --- For Individual Song Results ---
     # for item in top_results:
     #     try:
@@ -77,7 +77,8 @@ def scrape_album(url):
     sorted_album_results = []
     for key, value in sorted(album_results.iteritems(), key=lambda (k,v): (v,k)):
         sorted_album_results.append((key,value))
-    print(sorted_album_results)
+    print(album_results)
+    #print(sorted_album_results)
     
 # Return: Requests object, needs to be jsonified
 def get_song_info(song, artist):
@@ -208,7 +209,13 @@ def main():
     user_input = sys.argv
 
     if arg_len == 2 and user_input[1] == 'scrapeAlbum':
-        scrape_album("https://genius.com/albums/Kendrick-lamar/Good-kid-m-a-a-d-city")
+        new_art = ArtistNode("Kendrick Lamar",7922)
+        album_urls = ["Good-kid-m-a-a-d-city","To-pimp-a-butterfly"]
+        new_art.album_urls = album_urls        
+        for album in new_art.album_urls:
+            scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album)
+        #scrape_album("https://genius.com/albums/Kendrick-lamar/Good-kid-m-a-a-d-city")
+        #scrape_album("https://genius.com/albums/Kendrick-lamar/To-pimp-a-butterfly")
 
     #----------In Progress---------
     if arg_len == 3 and user_input[1] == 'addArtist':
