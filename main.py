@@ -41,14 +41,14 @@ def lyric_analysis(song_lyrics):
         else:
             my_dict[item] = 1
     sorted_dict = sorted(my_dict.items(), key=operator.itemgetter(1), reverse=True)
-    top_results = sorted_dict[:15]
+    # top_results = sorted_dict[:15]  -- If you want top 15 results per song
     # --- For Individual Song Results ---
     # for item in top_results:
     #     try:
     #         print item[0], ',', item[1]
     #     except UnicodeEncodeError:
     #         print "Error on character"
-    return top_results
+    return sorted_dict
 
 # Return: string that holds all the lyrics text
 def scrape_lyrics(url):
@@ -67,6 +67,7 @@ def scrape_album(url):
     song_pages = inner_html.findAll('a', {"class": 'u-display_block'}, href=True)
     song_urls = [s["href"] for s in song_pages]
     for song in song_urls:
+        print song
         song_lyrics = scrape_lyrics(song)
         results = (lyric_analysis(song_lyrics))
         for res_key,res_val in results:
@@ -77,7 +78,8 @@ def scrape_album(url):
     sorted_album_results = []
     for key, value in sorted(album_results.iteritems(), key=lambda (k,v): (v,k)):
         sorted_album_results.append((key,value))
-    print(album_results)
+    #print(album_results)
+    return album_results
     #print(sorted_album_results)
     
 # Return: Requests object, needs to be jsonified
@@ -208,20 +210,41 @@ def main():
     arg_len = len(sys.argv)
     user_input = sys.argv
 
-    if arg_len == 2 and user_input[1] == 'scrapeAlbum':
+    if arg_len == 2 and user_input[1] == 'artistMapInitial':
+        lyrical_map = GraphObj()
         kendrick = {"name": "Kendrick Lamar", "id": 1421, "albums": ["Good-kid-m-a-a-d-city","To-pimp-a-butterfly"]}
         jay = {"name": "Jay Z", "id": 2, "albums": ["4-44","Magna-carta-holy-grail"]}
         joey = {"name": "Joey Bada$$", "id": 3, "albums": ["All-amerikkkan-bada"]}
-        art_list = [kendrick,jay,joey]
+        logic = {"name": "Logic", "id": 7922, "albums": ["Under-pressure","The-incredible-true-story","Bobby-tarantino","Everybody","Bobby-tarantino-ii","Ysiv"]}
+        art_list = [logic]
         for artist in art_list: 
-         new_art = ArtistNode(artist["name"],artist["id"])
-         album_urls = artist["albums"]
-         new_art.album_urls = album_urls        
-         for album in new_art.album_urls:
-             scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album)
+            new_art = ArtistNode(artist["name"],artist["id"])
+            album_urls = artist["albums"]
+            new_art.album_urls = album_urls
 
+            running_total = {}        
+            for album in new_art.album_urls:
+                single_album = (scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album))
+                for key,val in single_album.iteritems():
+                    if key in running_total:
+                        running_total[key] += val
+                    else:
+                        running_total[key] = val
+            real_total = {k:v for k,v in running_total.iteritems() if v != 1}
+            print real_total
+            lyrical_map.node_map[artist["id"]] = new_art
+        print len(lyrical_map.node_map)
+
+    if arg_len == 3 and user_input[1] == 'getArtistAtId':
+        try:
+            artist = verified_artists[user_input[2]]
+            print verified_artists[user_input[2]]['name']
+        except:
+            print "Artist Not Found at id:",user_input[2]
+    
     #----------In Progress---------
-    if arg_len == 3 and user_input[1] == 'addArtist':
+    if arg_len == 3 and user_input[1] == 'addArtist':        
+        
         artist_name = user_input[2]
         new_art = ArtistNode(artist_name,7922)
         integrateArtist(new_art)
