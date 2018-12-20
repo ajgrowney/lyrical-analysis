@@ -15,6 +15,7 @@ from multiprocessing.pool import ThreadPool as Pool
 from bs4 import BeautifulSoup
 from Components.node import NodeInterface, ArtistNode, LyricNode
 from Components.graph import GraphObj
+from Tests.metadata_test import metadata_test, songurl_test
 
 genius_api_call = {
     'token': constants["apikey"],
@@ -62,6 +63,7 @@ def scrape_lyrics(url):
     lyrics = inner_html.find('div', class_='lyrics').get_text()
     return lyrics
 
+# Descrption: For testing purposes because snippet used in scrape_album func
 # Param: url { String } - album url to be scraped for metadata
 # Return: String, Int - album name and the year it was released
 def scrape_album_data(url):
@@ -76,6 +78,16 @@ def scrape_album_data(url):
         return album_name, release_year
     except UnicodeEncodeError as e:
         print "Error",e
+# Description: For testing purposes because snippet used in scrape_album
+# Param url { String } - album url to be scraped for song urls
+# Return: List<String> - song urls that scrape album will scrape 
+def scrape_album_songurls(url):
+    html_page = requests.get(url)
+    inner_html = BeautifulSoup(html_page.content, 'html.parser')
+    [el.extract() for el in inner_html('script')]
+    song_pages = inner_html.findAll('a', {"class": 'u-display_block'}, href=True)
+    song_urls = [s["href"] for s in song_pages]
+    return song_urls
 
 # Param: url { String } - album url to be scraped for song urls and then processed
 # Return: { Dict, Int, String} - Album lyrics results, Album Release Year, and Album Title
@@ -269,16 +281,35 @@ def main():
             lyrical_map.node_map[artist["id"]] = new_art
 
     if arg_len == 2 and user_input[1] == 'testAlbumMetadata':
-        testInput = ["Kendrick-lamar/To-pimp-a-butterfly", "Kendrick-lamar/Good-kid-m-a-a-d-city","Logic/Under-pressure"]
-        testOutput = [{"title": "To Pimp a Butterfly", "year": 2015},{"title": "good kid, m.A.A.d city", "year": 2012},{"title": "Under Pressure", "year": 2014}]
-        for i in range(len(testInput)):
-            returned_title, returned_year = scrape_album_data("https://genius.com/albums/"+testInput[i])
+        meta_input = metadata_test["input"]
+        meta_expected = metadata_test["output"]
+        for i in range(len(meta_input)):
+            returned_title, returned_year = scrape_album_data("https://genius.com/albums/"+meta_input[i])
             returned_title = returned_title.rstrip()
 
-            if(returned_title == testOutput[i]["title"] and returned_year == testOutput[i]["year"]):
-                print("Test Success: " + testOutput[i]["title"])
+            if(returned_title == meta_expected[i]["title"] and returned_year == meta_expected[i]["year"]):
+                print("Test Success: " + meta_expected[i]["title"])
             else:
-                print("Test Failed: " + testOutput[i]["title"]+ str(testOutput[i]["year"]) + " vs " + returned_title + " " + str(returned_year))
+                print("Test Failed: " + meta_expected[i]["title"]+ str(meta_expected[i]["year"]) + " vs " + returned_title + " " + str(returned_year))
+        
+        songurl_input = songurl_test["input"]
+        songurl_expected = songurl_test["output"]
+        for i in range(len(songurl_input)):
+            returned_urls = scrape_album_songurls("https://genius.com/albums/"+songurl_input[i])
+            full_expected = [("https://genius.com/"+s) for s in songurl_expected[i]]
+            if(len(returned_urls) == len(full_expected)):
+                error_count = 0
+                for j in range(len(returned_urls)):
+                    if(returned_urls[j] != full_expected[j]):
+                        error_count += 1
+                        print(returned_urls[j] + " vs " + full_expected[j])
+                if error_count == 0:
+                    print("Test Success: " + songurl_input[i])
+                else:
+                    print("Failed on: " + str(error_count))
+            else:
+                print("Test Failed: " + str(len(full_expected)) + " vs " + str(len(returned_urls)))
+
     if arg_len == 3 and user_input[1] == 'getArtistAtId':
         try:
             artist = verified_artists[user_input[2]]
