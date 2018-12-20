@@ -30,6 +30,8 @@ if("verified_artists_path" in constants):
         verified_artists = False
         print("Invalid Verified Artist Path")
 
+# Param: song_lyrics { String } - string with all the song lyrics
+# Result: { Dictionary } - sorted dictionary containing a song with count per unique word
 def lyric_analysis(song_lyrics):
     song_lyrics = song_lyrics.lower().replace(',','').replace('[','').replace(']','')
     lyric_list = song_lyrics.split()
@@ -50,6 +52,7 @@ def lyric_analysis(song_lyrics):
     #         print "Error on character"
     return sorted_dict
 
+# Param: url { String } - url of a song to scrape the lyrics from
 # Return: string that holds all the lyrics text
 def scrape_lyrics(url):
     html_page = requests.get(url)
@@ -59,6 +62,8 @@ def scrape_lyrics(url):
     lyrics = inner_html.find('div', class_='lyrics').get_text()
     return lyrics
 
+# Param: url { String } - album url to be scraped for metadata
+# Return: String, Int - album name and the year it was released
 def scrape_album_data(url):
     html_page = requests.get(url)
     inner_html = BeautifulSoup(html_page.content, 'html.parser')
@@ -72,6 +77,8 @@ def scrape_album_data(url):
     except UnicodeEncodeError as e:
         print "Error",e
 
+# Param: url { String } - album url to be scraped for song urls and then processed
+# Return: { Dict, Int, String} - Album lyrics results, Album Release Year, and Album Title
 def scrape_album(url):
     album_results = {}
     html_page = requests.get(url)
@@ -105,13 +112,7 @@ def scrape_album(url):
     #print(album_results)
     return album_results, release_year, album_name
     #print(sorted_album_results)
-    
-# Return: Requests object, needs to be jsonified
-def get_song_info(song, artist):
-    url = genius_api_call['base']
-    params = {'q': song + ' ' + artist}
-    headers = {'Authorization': 'Bearer ' + genius_api_call['token']}
-    return requests.get(url+'/search', params=params, headers=headers)
+
 
 # Return: No return, only outputing song result
 def print_song_result(song_info):
@@ -157,7 +158,11 @@ def getArtistId(artist_in):
 # Return: No return, prints out to console with song data
 # Example: analyze_song("Element", "Kung Fu Kenny")
 def analyze_song(song,artist):
-    res = get_song_info(song,artist).json()
+    url = genius_api_call['base']
+    params = {'q': song + ' ' + artist}
+    headers = {'Authorization': 'Bearer ' + genius_api_call['token']}
+    res = requests.get(url+'/search', params=params, headers=headers).json()
+
     if res['meta']['status'] == 200:
         for hit in res['response']['hits']:
             if hit['type'] == 'song':
@@ -264,14 +269,16 @@ def main():
             lyrical_map.node_map[artist["id"]] = new_art
 
     if arg_len == 2 and user_input[1] == 'testAlbumMetadata':
-        testInput = ["https://genius.com/albums/Kendrick-lamar/To-pimp-a-butterfly", "https://genius.com/albums/Kendrick-lamar/Good-kid-m-a-a-d-city"]
-        testOutput = [{"title": "To Pimp a Butterfly", "year": 2015},{"title": "good kid, m.A.A.d city", "year": 2012}]
+        testInput = ["Kendrick-lamar/To-pimp-a-butterfly", "Kendrick-lamar/Good-kid-m-a-a-d-city","Logic/Under-pressure"]
+        testOutput = [{"title": "To Pimp a Butterfly", "year": 2015},{"title": "good kid, m.A.A.d city", "year": 2012},{"title": "Under Pressure", "year": 2014}]
         for i in range(len(testInput)):
-            returned_title, returned_year = scrape_album_data(testInput[i])
+            returned_title, returned_year = scrape_album_data("https://genius.com/albums/"+testInput[i])
+            returned_title = returned_title.rstrip()
+
             if(returned_title == testOutput[i]["title"] and returned_year == testOutput[i]["year"]):
                 print("Test Success: " + testOutput[i]["title"])
             else:
-                print("Test Failed: " + testOutput[i]["title"])
+                print("Test Failed: " + testOutput[i]["title"]+ str(testOutput[i]["year"]) + " vs " + returned_title + " " + str(returned_year))
     if arg_len == 3 and user_input[1] == 'getArtistAtId':
         try:
             artist = verified_artists[user_input[2]]
