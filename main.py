@@ -59,11 +59,34 @@ def scrape_lyrics(url):
     lyrics = inner_html.find('div', class_='lyrics').get_text()
     return lyrics
 
+def scrape_album_data(url):
+    html_page = requests.get(url)
+    inner_html = BeautifulSoup(html_page.content, 'html.parser')
+    [element.extract() for element in inner_html('script')]
+    metadata = inner_html.find("meta", itemprop="page_data")
+    try:
+        data = json.loads(metadata["content"].encode('utf-8'))
+        album_name = data["album"]['name']
+        release_year = data["album"]["release_date_components"]["year"]
+        return album_name, release_year
+    except UnicodeEncodeError as e:
+        print "Error",e
+
 def scrape_album(url):
     album_results = {}
     html_page = requests.get(url)
     inner_html = BeautifulSoup(html_page.content, 'html.parser')
     [el.extract() for el in inner_html('script')]
+
+    try:
+        # Scrape Album Relase Year
+        metadata = inner_html.find("meta", itemprop="page_data")
+        data = json.loads(metadata["content"].encode('utf-8'))
+        release_year = data["album"]["release_date_components"]["year"]
+        album_name = data["album"]["name"]
+    except UnicodeEncodeError as e:
+        print "Error",e
+
     song_pages = inner_html.findAll('a', {"class": 'u-display_block'}, href=True)
     song_urls = [s["href"] for s in song_pages]
     for song in song_urls:
@@ -75,11 +98,12 @@ def scrape_album(url):
                 album_results[res_key] += res_val
             else:
                 album_results[res_key] = res_val
+
     sorted_album_results = []
     for key, value in sorted(album_results.iteritems(), key=lambda (k,v): (v,k)):
         sorted_album_results.append((key,value))
     #print(album_results)
-    return album_results
+    return album_results, release_year, album_name
     #print(sorted_album_results)
     
 # Return: Requests object, needs to be jsonified
@@ -217,6 +241,7 @@ def main():
         joey = {"name": "Joey Bada$$", "id": 3, "albums": ["All-amerikkkan-bada"]}
         logic = {"name": "Logic", "id": 7922, "albums": ["Under-pressure","The-incredible-true-story","Bobby-tarantino","Everybody","Bobby-tarantino-ii","Ysiv"]}
         art_list = [logic]
+
         for artist in art_list: 
             new_art = ArtistNode(artist["name"],artist["id"])
             album_urls = artist["albums"]
@@ -224,7 +249,11 @@ def main():
 
             running_total = {}        
             for album in new_art.album_urls:
-                single_album = (scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album))
+                single_album, album_year, album_name = scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album)
+                
+                new_art.album_release_years[album_name] = album_year # Add the album year to the artist's node
+                
+                # Accumulate the albums lyrics to add to edges to artist's node
                 for key,val in single_album.iteritems():
                     if key in running_total:
                         running_total[key] += val
@@ -233,8 +262,16 @@ def main():
             real_total = {k:v for k,v in running_total.iteritems() if v != 1}
             print real_total
             lyrical_map.node_map[artist["id"]] = new_art
-        print len(lyrical_map.node_map)
 
+    if arg_len == 2 and user_input[1] == 'testAlbumMetadata':
+        testInput = ["https://genius.com/albums/Kendrick-lamar/To-pimp-a-butterfly", "https://genius.com/albums/Kendrick-lamar/Good-kid-m-a-a-d-city"]
+        testOutput = [{"title": "To Pimp a Butterfly", "year": 2015},{"title": "good kid, m.A.A.d city", "year": 2012}]
+        for i in range(len(testInput)):
+            returned_title, returned_year = scrape_album_data(testInput[i])
+            if(returned_title == testOutput[i]["title"] and returned_year == testOutput[i]["year"]):
+                print("Test Success: " + testOutput[i]["title"])
+            else:
+                print("Test Failed: " + testOutput[i]["title"])
     if arg_len == 3 and user_input[1] == 'getArtistAtId':
         try:
             artist = verified_artists[user_input[2]]

@@ -10,6 +10,7 @@ class ArtistNode(NodeInterface):
         self.adj_list = {}
         self.album_search_str = name_in.replace(' ','-').replace('$','')
         self.album_urls = []
+        self.album_release_years = {}
         print "Creating artist node:",self.name, self.id
     
     def addAlbumUrl(self,url):
