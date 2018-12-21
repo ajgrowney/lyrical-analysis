@@ -6,10 +6,10 @@ metadata_test = {
         "Logic/The-incredible-true-story",
     ],
     "output": [
-        {"title": "To Pimp a Butterfly", "year": 2015},
-        {"title": "good kid, m.A.A.d city", "year": 2012},
-        {"title": "Under Pressure", "year": 2014},
-        {"title": "The Incredible True Story", "year": 2015},
+        {"title": "To Pimp a Butterfly", "year": 2015, "id": 120991},
+        {"title": "good kid, m.A.A.d city", "year": 2012, "id": 15946},
+        {"title": "Under Pressure", "year": 2014, "id": 112067},
+        {"title": "The Incredible True Story", "year": 2015, "id": 130526},
     ]
 }
 songurl_test = {
@@ -62,15 +62,33 @@ songurl_test = {
             "Kendrick-lamar-black-boy-fly-lyrics",
             "Kendrick-lamar-now-or-never-lyrics",
             "Kendrick-lamar-collect-calls-lyrics",
-            "Kendrick-lamar-swimming-pools-drank-lyrics",
-            "Kendrick-lamar-bitch-dont-kill-my-vibe-lyrics",
-            "Kendrick-lamar--lyrics",
+            "Kendrick-lamar-county-building-blues-lyrics",
+            "Kendrick-lamar-the-recipe-remix-lyrics",
+            "Kendrick-lamar-swimming-pools-black-hippy-remix-lyrics",
             "Kendrick-lamar-bitch-dont-kill-my-vibe-remix-lyrics",
             "Kendrick-lamar-bitch-dont-kill-my-vibe-international-remix-lyrics",
             "Kendrick-lamar-good-kid-maad-city-credits-annotated",
             "Kendrick-lamar-good-kid-maad-city-booklet-annotated"
         ],
-        [],
+        [
+            "Logic-intro-lyrics",
+            "Logic-soul-food-lyrics",
+            "Logic-im-gone-lyrics",
+            "Logic-gang-related-lyrics",
+            "Logic-buried-alive-lyrics", 
+            "Logic-bounce-lyrics",
+            "Logic-growing-pains-iii-lyrics",
+            "Logic-never-enough-lyrics",
+            "Logic-metropolis-lyrics",
+            "Logic-nikki-lyrics",
+            "Logic-under-pressure-lyrics",
+            "Logic-till-the-end-lyrics",
+            "Logic-driving-ms-daisy-lyrics",
+            "Logic-now-lyrics",
+            "Logic-alright-lyrics",
+            "Logic-under-pressure-credits-lyrics",
+            "Logic-under-pressure-album-cover-and-tracklist-annotated"
+        ],
         [
             "Logic-contact-lyrics",
             "Logic-fade-away-lyrics",
@@ -94,5 +112,20 @@ songurl_test = {
             "Logic-the-incredible-true-story-tracklist-album-cover-annotated",
             "Logic-the-incredible-true-story-credits-lyrics"
         ],
+    ]
+}
+
+albumfeatures_test = {
+    "input": [
+        "Kendrick-lamar/To-pimp-a-butterfly",
+        "Kendrick-lamar/Good-kid-m-a-a-d-city", 
+        "Logic/Under-pressure",
+        "Logic/The-incredible-true-story",
+    ],
+    "output": [
+        {'verified': {14148: 'Rapsody', 17649: 'James Fauntleroy', 2668: 'Ronald Isley', 1421: 'Kendrick Lamar', 46: 'Snoop Dogg', 177: 'Bilal', 351: 'George Clinton'}, 'unverified': {14481: 'Thundercat', 2434: 'Anna Wise'}},
+        {'verified': {13465: u'Emeli Sand\xe9', 2: 'JAY-Z', 1403: 'Jay Rock', 358: 'Mary J. Blige'}, 'unverified': {17985: 'Black Hippy', 130: 'Drake', 123: u'Dr.\xa0Dre', 4637: 'MC Eiht', 2434: 'Anna Wise'}},
+        {'verified': {1745: 'Childish Gambino', 492: 'Big Sean'}, 'unverified': {}},
+        {'verified': {569307: 'Big Lenbo', 12636: 'Jesse Boykins III'}, 'unverified': {213416: 'Dria', 27710: 'Kevin Randolph', 561494: 'Anna Elyse Palchikoff', 71478: 'Lucy Rose', 561493: 'Steve Blum'}}
     ]
 }

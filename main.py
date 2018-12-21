@@ -15,7 +15,7 @@ from multiprocessing.pool import ThreadPool as Pool
 from bs4 import BeautifulSoup
 from Components.node import NodeInterface, ArtistNode, LyricNode
 from Components.graph import GraphObj
-from Tests.metadata_test import metadata_test, songurl_test
+from Tests.metadata_test import metadata_test, songurl_test, albumfeatures_test
 
 genius_api_call = {
     'token': constants["apikey"],
@@ -65,7 +65,7 @@ def scrape_lyrics(url):
 
 # Descrption: For testing purposes because snippet used in scrape_album func
 # Param: url { String } - album url to be scraped for metadata
-# Return: String, Int - album name and the year it was released
+# Return: String, Int, Int, Dict - album name, the year it was released, album id, and features
 def scrape_album_data(url):
     html_page = requests.get(url)
     inner_html = BeautifulSoup(html_page.content, 'html.parser')
@@ -73,11 +73,32 @@ def scrape_album_data(url):
     metadata = inner_html.find("meta", itemprop="page_data")
     try:
         data = json.loads(metadata["content"].encode('utf-8'))
+        appearances = data["album_appearances"]
+        
+        # Strip album features (Ideas: store just id's or data on which song?)
+        album_features = {"verified": {}, "unverified": {}}
+        for ap in appearances:
+            for feature in ap["song"]["featured_artists"]:
+                if feature["is_verified"]:
+                    if (feature["id"] not in album_features["verified"]):
+                        album_features["verified"][feature["id"]] = feature["name"]
+                else:
+                    if (feature["id"] not in album_features["unverified"]):
+                        album_features["unverified"][feature["id"]] = feature["name"]
+
+        # Get other albums by the artist in the database
+        more_albums = data["other_albums_by_artist"]
+        # for album in more_albums:
+        #     if album["_type"] == "album":
+        #         print album.keys(), album["name"], album["id"], album["artist"]["id"]
+      
         album_name = data["album"]['name']
         release_year = data["album"]["release_date_components"]["year"]
-        return album_name, release_year
+        album_id = data["album"]["id"]
+        return album_name, release_year, album_id, album_features
     except UnicodeEncodeError as e:
         print "Error",e
+
 # Description: For testing purposes because snippet used in scrape_album
 # Param url { String } - album url to be scraped for song urls
 # Return: List<String> - song urls that scrape album will scrape 
@@ -98,11 +119,14 @@ def scrape_album(url):
     [el.extract() for el in inner_html('script')]
 
     try:
-        # Scrape Album Relase Year
+        # Scrape Album Metadata
         metadata = inner_html.find("meta", itemprop="page_data")
         data = json.loads(metadata["content"].encode('utf-8'))
+        
         release_year = data["album"]["release_date_components"]["year"]
         album_name = data["album"]["name"]
+        album_id = data["album"]["id"]
+    
     except UnicodeEncodeError as e:
         print "Error",e
 
@@ -251,6 +275,7 @@ def main():
     arg_len = len(sys.argv)
     user_input = sys.argv
 
+    # In Progress: Main Functionality
     if arg_len == 2 and user_input[1] == 'artistMapInitial':
         lyrical_map = GraphObj()
         kendrick = {"name": "Kendrick Lamar", "id": 1421, "albums": ["Good-kid-m-a-a-d-city","To-pimp-a-butterfly"]}
@@ -280,20 +305,34 @@ def main():
             print real_total
             lyrical_map.node_map[artist["id"]] = new_art
 
-    if arg_len == 2 and user_input[1] == 'testAlbumMetadata':
+    # Very Useful for Testing
+    elif arg_len == 2 and user_input[1] == 'runTests':
+
+        # Test Data
+        successful_tests = 0
+        failed_tests = 0
+
+        # Testing Album Title and Year Results
         meta_input = metadata_test["input"]
         meta_expected = metadata_test["output"]
+
+        print("\n---------Album Title/Year Testing---------")
         for i in range(len(meta_input)):
-            returned_title, returned_year = scrape_album_data("https://genius.com/albums/"+meta_input[i])
+            returned_title, returned_year, returned_album_id, returned_features = scrape_album_data("https://genius.com/albums/"+meta_input[i])
             returned_title = returned_title.rstrip()
 
-            if(returned_title == meta_expected[i]["title"] and returned_year == meta_expected[i]["year"]):
+            if(returned_title == meta_expected[i]["title"] and returned_year == meta_expected[i]["year"] and returned_album_id == meta_expected[i]["id"]):
                 print("Test Success: " + meta_expected[i]["title"])
+                successful_tests += 1
             else:
                 print("Test Failed: " + meta_expected[i]["title"]+ str(meta_expected[i]["year"]) + " vs " + returned_title + " " + str(returned_year))
+                failed_tests += 1
         
+        # Testing Scrape Album's Song URL results
         songurl_input = songurl_test["input"]
         songurl_expected = songurl_test["output"]
+
+        print("\n---------Album Song URL Testing---------")
         for i in range(len(songurl_input)):
             returned_urls = scrape_album_songurls("https://genius.com/albums/"+songurl_input[i])
             full_expected = [("https://genius.com/"+s) for s in songurl_expected[i]]
@@ -305,31 +344,61 @@ def main():
                         print(returned_urls[j] + " vs " + full_expected[j])
                 if error_count == 0:
                     print("Test Success: " + songurl_input[i])
+                    successful_tests += 1
+
                 else:
                     print("Failed on: " + str(error_count))
+                    failed_tests += 1
             else:
                 print("Test Failed: " + str(len(full_expected)) + " vs " + str(len(returned_urls)))
+                failed_tests += 1
 
-    if arg_len == 3 and user_input[1] == 'getArtistAtId':
+        # Testing Album Features
+        albumfeatures_input = albumfeatures_test["input"]
+        albumfeatures_expected = albumfeatures_test["output"]
+
+        print("\n---------Album Features Testing---------")
+        for i in range(len(albumfeatures_input)):
+            _, _, _, returned_features = scrape_album_data("https://genius.com/albums/"+albumfeatures_input[i])
+            if(returned_features == albumfeatures_expected[i]):
+                successful_tests += 1
+                print("Test Success: " + albumfeatures_input[i])
+            else:
+                failed_tests += 1
+                print("Test Failed: " + str(albumfeatures_expected[i]) + " vs " + str(returned_features))
+
+        # Testing Results Total
+        print("\n---------Testing Results---------")
+        print("Total Successful Tests: "+ str(successful_tests))
+        print("Total Failed Tests: " + str(failed_tests))
+        print("Testing Results: " + str(100 * float(successful_tests/(successful_tests+failed_tests))) + "%")
+
+    # Album Data Temporary 
+    elif arg_len == 2 and user_input[1] == 'albumDataWork':
+        scrape_album_data("https://genius.com/albums/Logic/The-incredible-true-story")
+    # Improve or Delete
+    elif arg_len == 3 and user_input[1] == 'getArtistAtId':
         try:
             artist = verified_artists[user_input[2]]
             print verified_artists[user_input[2]]['name']
         except:
             print "Artist Not Found at id:",user_input[2]
     
-    #----------In Progress---------
-    if arg_len == 3 and user_input[1] == 'addArtist':        
+    # Must be improved or deleted
+    elif arg_len == 3 and user_input[1] == 'addArtist':        
         
         artist_name = user_input[2]
         new_art = ArtistNode(artist_name,7922)
         integrateArtist(new_art)
         print("Results: ",new_art.adj_list)
 
-    if arg_len == 4 and user_input[1] == 'search':
+    # Can be used for testing
+    elif arg_len == 4 and user_input[1] == 'searchSingleSong':
         song, artist = user_input[2], user_input[3]
         lyric_dict = analyze_song(song,artist)
         print(lyric_dict)
 
+    # Must be improved or deleted
     elif arg_len == 5 and user_input[1] == 'artistId':
         getArtistIdRange(user_input[2],user_input[3],user_input[4])
         
