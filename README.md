@@ -13,6 +13,10 @@ Album Title and Year <br />
 Album Song URL's <br />
 Album Features <br />
 
+## Artist Map Initial
+Description: This will be the main function that will be used to assemble the graph as a whole. As of now, I am buidling up the album scraping functionality so it can take in an artist's entire discography to create a well informed node
+Command Line: python main.py artistMapInitial
+
 ## Artist Id Scraping
 Description: Runs API calls for all of the range given, and creates objects for them in the provided filename <br />
 Command Line: python main.py artistId 1 2000 artistId.json <br />
