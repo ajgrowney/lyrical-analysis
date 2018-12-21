@@ -142,12 +142,12 @@ def scrape_album(url):
             else:
                 album_results[res_key] = res_val
 
+    # Can be returned instead of album_results if you want a sorted array of lyrics from the album
     sorted_album_results = []
     for key, value in sorted(album_results.iteritems(), key=lambda (k,v): (v,k)):
         sorted_album_results.append((key,value))
-    #print(album_results)
+
     return album_results, release_year, album_name
-    #print(sorted_album_results)
 
 
 # Return: No return, only outputing song result
