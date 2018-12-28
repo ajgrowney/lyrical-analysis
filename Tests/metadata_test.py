@@ -128,8 +128,8 @@ songids_test = {
         {
             2312800: "Young Jesus",
             2338721: "I Am the Greatest",
-            2313673: "The Incredible True Story [Trailer + Album Cover]",
-            2338720: "Lord Willin",
+            2313673: "The Incredible True Story [Tracklist + Album Cover]",
+            2338720: "Lord Willin'",
             2343638: "Lucidity (Scene)",
             2300278: "The Incredible True Story (Trailer)",
             2327079: "Like Woah",
@@ -138,7 +138,7 @@ songids_test = {
             2343629: "The Cube (Scene)",
             2343630: "City of Stars",
             2343632: "Stainless",
-            2343632: "Babel (Scene)",
+            2343633: "Babel (Scene)",
             2343635: "Paradise",
             2343636: "Never Been",
             2343637: "Run It",
@@ -146,7 +146,7 @@ songids_test = {
             2343415: "Fade Away",
             2343416: "Upgrade",
             2343417: "White People (Scene)",
-            2344047: "The Incredible True Story [Credits]"
+            2374047: "The Incredible True Story [Credits]",
         }
     ]
 }
