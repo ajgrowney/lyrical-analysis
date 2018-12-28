@@ -20,13 +20,12 @@ class ArtistNode(NodeInterface):
         self.adj_list[key] = val
 
 class LyricNode(NodeInterface):
-    def __init__(self, word, id_in):
+    def __init__(self, word):
         self.lyric = word
-        self.id = id_in # Lyric ID
+        self.id = word
         self.adj_list = {}
-        print "Creating lyric node: ", self.lyric
+        self.timeline = {}
+        self.song_references = {}
     def addConnection(self, key, val):
         self.adj_list[key] = val
 
-    def getAdjList(self):
-        return self.adj_list

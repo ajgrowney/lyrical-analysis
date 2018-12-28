@@ -15,7 +15,8 @@ from multiprocessing.pool import ThreadPool as Pool
 from bs4 import BeautifulSoup
 from Components.node import NodeInterface, ArtistNode, LyricNode
 from Components.graph import GraphObj
-from Tests.metadata_test import metadata_test, songurl_test, albumfeatures_test, songids_test
+from Components.objects import AlbumObject
+from Tests.metadata_test import album_test
 
 genius_api_call = {
     'token': constants["apikey"],
@@ -39,6 +40,7 @@ def lyric_analysis(song_lyrics):
     [lyric.lower() for lyric in lyric_list]
     my_dict = {}
     for item in lyric_list:
+        item = item.encode('ascii','ignore').decode('utf-8')
         if item in my_dict and (item not in constants["ignore"]):
             my_dict[item] += 1
         else:
@@ -75,7 +77,7 @@ def scrape_album_data(url):
         data = json.loads(metadata["content"].encode('utf-8'))
         appearances = data["album_appearances"]
         
-        # Strip album features (Ideas: store just id's or data on which song?)
+        # Strip album features and song id with titles
         album_features = {"verified": {}, "unverified": {}}
         album_song_id = {}
         for ap in appearances:
@@ -89,16 +91,12 @@ def scrape_album_data(url):
                     if (feature["id"] not in album_features["unverified"]):
                         album_features["unverified"][feature["id"]] = feature["name"]
 
-        # Get other albums by the artist in the database
+        # Get other albums by the artist in the database (TODO: Could add later)
         more_albums = data["other_albums_by_artist"]
-        # for album in more_albums:
-        #     if album["_type"] == "album":
-        #         print album.keys(), album["name"], album["id"], album["artist"]["id"]
       
         album_name = data["album"]['name']
         release_year = data["album"]["release_date_components"]["year"]
         album_id = data["album"]["id"]
-        #print album_song_id
         return album_name, release_year, album_id, album_features, album_song_id
     except UnicodeEncodeError as e:
         print "Error",e
@@ -115,9 +113,10 @@ def scrape_album_songurls(url):
     return song_urls
 
 # Param: url { String } - album url to be scraped for song urls and then processed
-# Return: { Dict, Int, String} - Album lyrics results, Album Release Year, and Album Title
-def scrape_album(url):
-    album_results = {}
+# Param: lyric_map { GraphObj } - graph containing current lyric and artist nodes
+# Return: { AlbumObject } - Album Object containing all the album's data and lyric results
+def scrape_album(url,lyric_map):
+    returnAlbum = AlbumObject()
     html_page = requests.get(url)
     inner_html = BeautifulSoup(html_page.content, 'html.parser')
     [el.extract() for el in inner_html('script')]
@@ -126,14 +125,24 @@ def scrape_album(url):
         # Scrape Album Metadata
         metadata = inner_html.find("meta", itemprop="page_data")
         data = json.loads(metadata["content"].encode('utf-8'))
-        
-        release_year = data["album"]["release_date_components"]["year"]
-        album_name = data["album"]["name"]
-        album_id = data["album"]["id"]
+        for appearance in data["album_appearances"]:
+            song_title = appearance["song"]["title"].encode('ascii','ignore').decode('utf-8')
+            returnAlbum.song_ids[appearance["song"]["id"]] = song_title
+            for feat in appearance["song"]["featured_artists"]:
+                if feat["is_verified"]:
+                    if(feat["id"] not in returnAlbum.features["verified"]):
+                        returnAlbum.features["verified"][feat["id"]] = feat["name"]
+                else:
+                    if(feat["id"] not in returnAlbum.features["unverified"]):
+                        returnAlbum.features["unverified"][feat["id"]] = feat["name"]
+        returnAlbum.release_year = data["album"]["release_date_components"]["year"]
+        returnAlbum.title = data["album"]["name"]
+        returnAlbum.id = data["album"]["id"]
     
     except UnicodeEncodeError as e:
         print "Error",e
 
+    album_results = {}
     song_pages = inner_html.findAll('a', {"class": 'u-display_block'}, href=True)
     song_urls = [s["href"] for s in song_pages]
     for song in song_urls:
@@ -141,17 +150,31 @@ def scrape_album(url):
         song_lyrics = scrape_lyrics(song)
         results = (lyric_analysis(song_lyrics))
         for res_key,res_val in results:
+            # Adding lyric to over all map
+            if res_key in lyric_map.node_map:
+                if returnAlbum.release_year in lyric_map.node_map[res_key].timeline:
+                    lyric_map.node_map[res_key].timeline[returnAlbum.release_year] += res_val
+                else:
+                    lyric_map.node_map[res_key].timeline[returnAlbum.release_year] = res_val
+            else:
+                newLyric = LyricNode(res_key)
+                newLyric.timeline[returnAlbum.release_year] = res_val
+                lyric_map.node_map[res_key] = newLyric
+            
+            # Adding lyric to individual album results
             if res_key in album_results:
                 album_results[res_key] += res_val
             else:
                 album_results[res_key] = res_val
 
-    # Can be returned instead of album_results if you want a sorted array of lyrics from the album
-    sorted_album_results = []
-    for key, value in sorted(album_results.iteritems(), key=lambda (k,v): (v,k)):
-        sorted_album_results.append((key,value))
+    returnAlbum.lyric_results = album_results
 
-    return album_results, release_year, album_name
+    # Can be returned instead of album_results if you want a sorted array of lyrics from the album
+    # sorted_album_results = []
+    # for key, value in sorted(album_results.iteritems(), key=lambda (k,v): (v,k)):
+    #     sorted_album_results.append((key,value))
+
+    return returnAlbum, lyric_map
 
 
 # Return: No return, only outputing song result
@@ -270,7 +293,8 @@ def integrateArtist(artNode):
     return artNode
     
 
-# Description: Supports two main calls as of now: 
+# Description: Supports two main calls as of now:
+# 
 # Song Search Analysis: takes in a song and artist, prints out top fifteen most used lyrics with option to exclude certain words
 # Song Search Ex: python main.py 'search' "Element" "Kung Fu Kenny"
 # Artist Id Retreival: takes in a range to make artist id api calls, creates a json file full of names that belong to that artist ID
@@ -282,47 +306,51 @@ def main():
     # In Progress: Main Functionality
     if arg_len == 2 and user_input[1] == 'artistMapInitial':
         lyrical_map = GraphObj()
-        kendrick = {"name": "Kendrick Lamar", "id": 1421, "albums": ["Good-kid-m-a-a-d-city","To-pimp-a-butterfly"]}
-        jay = {"name": "Jay Z", "id": 2, "albums": ["4-44","Magna-carta-holy-grail"]}
-        joey = {"name": "Joey Bada$$", "id": 3, "albums": ["All-amerikkkan-bada"]}
-        logic = {"name": "Logic", "id": 7922, "albums": ["Under-pressure","The-incredible-true-story","Bobby-tarantino","Everybody","Bobby-tarantino-ii","Ysiv"]}
-        art_list = [logic]
+        kendrick = {"name": "Kendrick Lamar", "id": 1421, "album_paths": ["Good-kid-m-a-a-d-city","To-pimp-a-butterfly"]}
+        jay = {"name": "Jay Z", "id": 2, "album_paths": ["4-44","Magna-carta-holy-grail"]}
+        joey = {"name": "Joey Bada$$", "id": 3, "album_paths": ["All-amerikkkan-bada"]}
+        logic = {"name": "Logic", "id": 7922, "album_paths": ["Under-pressure","The-incredible-true-story","Bobby-tarantino","Everybody","Bobby-tarantino-ii","Ysiv"]}
+        art_list = [kendrick]
 
         for artist in art_list: 
             new_art = ArtistNode(artist["name"],artist["id"])
-            album_urls = artist["albums"]
+            album_urls = artist["album_paths"]
             new_art.album_urls = album_urls
 
             running_total = {}        
             for album in new_art.album_urls:
-                single_album, album_year, album_name = scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album)
+                single_album,lyrical_map = scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album,lyrical_map)
                 
-                new_art.album_release_years[album_name] = album_year # Add the album year to the artist's node
-                
+                new_art.album_release_years[single_album.title] = single_album.release_year # Add the album year to the artist's node
+                print len(single_album.lyric_results)
                 # Accumulate the albums lyrics to add to edges to artist's node
-                for key,val in single_album.iteritems():
+                for key,val in single_album.lyric_results.iteritems():
                     if key in running_total:
                         running_total[key] += val
                     else:
                         running_total[key] = val
             real_total = {k:v for k,v in running_total.iteritems() if v != 1}
-            print real_total
+            print lyrical_map.node_map["momma"].timeline
             lyrical_map.node_map[artist["id"]] = new_art
 
-    # Very Useful for Testing
+    # TODO: Restructure Suite to only make each http request once
+    # Testing Suite
     elif arg_len == 2 and user_input[1] == 'runTests':
 
         # Test Data
         successful_tests = 0
         failed_tests = 0
 
+        # Testing Input
+        albumtest_input = album_test["input"]
+
         # Testing Album Title and Year Results
-        meta_input = metadata_test["input"]
-        meta_expected = metadata_test["output"]
+        meta_expected = album_test["metadata_output"]
+
 
         print("\n---------Album Title/Year Testing---------")
-        for i in range(len(meta_input)):
-            returned_title, returned_year, returned_album_id, returned_features, _  = scrape_album_data("https://genius.com/albums/"+meta_input[i])
+        for i in range(len(albumtest_input)):
+            returned_title, returned_year, returned_album_id, returned_features, returned_songids  = scrape_album_data("https://genius.com/albums/"+albumtest_input[i])
             returned_title = returned_title.rstrip()
 
             if(returned_title == meta_expected[i]["title"] and returned_year == meta_expected[i]["year"] and returned_album_id == meta_expected[i]["id"]):
@@ -333,24 +361,17 @@ def main():
                 failed_tests += 1
         
         # Testing Scrape Album's Song URL results
-        songurl_input = songurl_test["input"]
-        songurl_expected = songurl_test["output"]
+        songurl_expected = album_test["songurl_output"]
 
         print("\n---------Album Song URL Testing---------")
-        for i in range(len(songurl_input)):
-            returned_urls = scrape_album_songurls("https://genius.com/albums/"+songurl_input[i])
+        for i in range(len(albumtest_input)):
+            returned_urls = scrape_album_songurls("https://genius.com/albums/"+albumtest_input[i])
             full_expected = [("https://genius.com/"+s) for s in songurl_expected[i]]
             if(len(returned_urls) == len(full_expected)):
                 error_count = 0
-                #for j in range(len(returned_urls)):
-                #    if(returned_urls[j] != full_expected[j]):
-                #        error_count += 1
-                #        print(returned_urls[j] + " vs " + full_expected[j])
-                #if error_count == 0:
-                #    print("Test Success: " + songurl_input[i])
-                #    successful_tests += 1
+
                 if(set(returned_urls) == set(full_expected)):
-                    print("Test Success: " + songurl_input[i])
+                    print("Test Success: " + albumtest_input[i])
                     successful_tests += 1
                 else:
                     print("Failed on: " + str(error_count))
@@ -363,28 +384,26 @@ def main():
                 failed_tests += 1
 
         # Testing Album Features
-        albumfeatures_input = albumfeatures_test["input"]
-        albumfeatures_expected = albumfeatures_test["output"]
+        albumfeatures_expected = album_test["albumfeatures_output"]
 
         print("\n---------Album Features Testing---------")
-        for i in range(len(albumfeatures_input)):
-            _, _, _, returned_features, _ = scrape_album_data("https://genius.com/albums/"+albumfeatures_input[i])
+        for i in range(len(albumtest_input)):
+            _, _, _, returned_features, _ = scrape_album_data("https://genius.com/albums/"+albumtest_input[i])
             if(returned_features == albumfeatures_expected[i]):
                 successful_tests += 1
-                print("Test Success: " + albumfeatures_input[i])
+                print("Test Success: " + albumtest_input[i])
             else:
                 failed_tests += 1
                 print("Test Failed: " + str(albumfeatures_expected[i]) + " vs " + str(returned_features))
         
         # Testing Song IDs
-        songids_input = songids_test["input"]
-        songids_expected = songids_test["output"]
+        songids_expected = album_test["songids_output"]
         print("\n---------Song IDs Testing---------")
-        for i in range(len(songids_input)):
-            _, _, _,_, returned_songids = scrape_album_data("https://genius.com/albums/"+songids_input[i])
+        for i in range(len(albumtest_input)):
+            _, _, _,_, returned_songids = scrape_album_data("https://genius.com/albums/"+albumtest_input[i])
             if(returned_songids == songids_expected[i]):
                 successful_tests += 1
-                print("Test Success: " + songids_input[i])
+                print("Test Success: " + albumtest_input[i])
             else:
                 failed_tests += 1
                 print("Test Failed: " + str(songids_expected[i]) + " vs " + str(returned_songids))
@@ -395,9 +414,10 @@ def main():
         print("Total Failed Tests: " + str(failed_tests))
         print("Testing Results: " + str(100 * float(successful_tests/(successful_tests+failed_tests))) + "%")
 
-    # Album Data Temporary 
+    # Album Data (Temporary) 
     elif arg_len == 2 and user_input[1] == 'albumDataWork':
-        scrape_album_data("https://genius.com/albums/Logic/The-incredible-true-story")
+        scrape_album_data("https://genius.com/albums/Logic/Under-pressure")
+   
     # Improve or Delete
     elif arg_len == 3 and user_input[1] == 'getArtistAtId':
         try:
