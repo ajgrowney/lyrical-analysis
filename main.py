@@ -15,7 +15,7 @@ from multiprocessing.pool import ThreadPool as Pool
 from bs4 import BeautifulSoup
 from Components.node import NodeInterface, ArtistNode, LyricNode
 from Components.graph import GraphObj
-from Tests.metadata_test import metadata_test, songurl_test, albumfeatures_test
+from Tests.metadata_test import metadata_test, songurl_test, albumfeatures_test, songids_test
 
 genius_api_call = {
     'token': constants["apikey"],
@@ -77,7 +77,10 @@ def scrape_album_data(url):
         
         # Strip album features (Ideas: store just id's or data on which song?)
         album_features = {"verified": {}, "unverified": {}}
+        album_song_id = {}
         for ap in appearances:
+            s = ap["song"]["title"].encode('ascii','ignore').decode('utf-8')
+            album_song_id[ap["song"]["id"]] = s
             for feature in ap["song"]["featured_artists"]:
                 if feature["is_verified"]:
                     if (feature["id"] not in album_features["verified"]):
@@ -95,7 +98,8 @@ def scrape_album_data(url):
         album_name = data["album"]['name']
         release_year = data["album"]["release_date_components"]["year"]
         album_id = data["album"]["id"]
-        return album_name, release_year, album_id, album_features
+        #print album_song_id
+        return album_name, release_year, album_id, album_features, album_song_id
     except UnicodeEncodeError as e:
         print "Error",e
 
@@ -318,7 +322,7 @@ def main():
 
         print("\n---------Album Title/Year Testing---------")
         for i in range(len(meta_input)):
-            returned_title, returned_year, returned_album_id, returned_features = scrape_album_data("https://genius.com/albums/"+meta_input[i])
+            returned_title, returned_year, returned_album_id, returned_features, _  = scrape_album_data("https://genius.com/albums/"+meta_input[i])
             returned_title = returned_title.rstrip()
 
             if(returned_title == meta_expected[i]["title"] and returned_year == meta_expected[i]["year"] and returned_album_id == meta_expected[i]["id"]):
@@ -338,19 +342,24 @@ def main():
             full_expected = [("https://genius.com/"+s) for s in songurl_expected[i]]
             if(len(returned_urls) == len(full_expected)):
                 error_count = 0
-                for j in range(len(returned_urls)):
-                    if(returned_urls[j] != full_expected[j]):
-                        error_count += 1
-                        print(returned_urls[j] + " vs " + full_expected[j])
-                if error_count == 0:
+                #for j in range(len(returned_urls)):
+                #    if(returned_urls[j] != full_expected[j]):
+                #        error_count += 1
+                #        print(returned_urls[j] + " vs " + full_expected[j])
+                #if error_count == 0:
+                #    print("Test Success: " + songurl_input[i])
+                #    successful_tests += 1
+                if(set(returned_urls) == set(full_expected)):
                     print("Test Success: " + songurl_input[i])
                     successful_tests += 1
-
                 else:
                     print("Failed on: " + str(error_count))
                     failed_tests += 1
             else:
                 print("Test Failed: " + str(len(full_expected)) + " vs " + str(len(returned_urls)))
+                print(returned_urls)
+                print("\n\n")
+                print(full_expected)
                 failed_tests += 1
 
         # Testing Album Features
@@ -359,13 +368,26 @@ def main():
 
         print("\n---------Album Features Testing---------")
         for i in range(len(albumfeatures_input)):
-            _, _, _, returned_features = scrape_album_data("https://genius.com/albums/"+albumfeatures_input[i])
+            _, _, _, returned_features, _ = scrape_album_data("https://genius.com/albums/"+albumfeatures_input[i])
             if(returned_features == albumfeatures_expected[i]):
                 successful_tests += 1
                 print("Test Success: " + albumfeatures_input[i])
             else:
                 failed_tests += 1
                 print("Test Failed: " + str(albumfeatures_expected[i]) + " vs " + str(returned_features))
+        
+        # Testing Song IDs
+        songids_input = songids_test["input"]
+        songids_expected = songids_test["output"]
+        print("\n---------Song IDs Testing---------")
+        for i in range(len(songids_input)):
+            _, _, _,_, returned_songids = scrape_album_data("https://genius.com/albums/"+songids_input[i])
+            if(returned_songids == songids_expected[i]):
+                successful_tests += 1
+                print("Test Success: " + songids_input[i])
+            else:
+                failed_tests += 1
+                print("Test Failed: " + str(songids_expected[i]) + " vs " + str(returned_songids))
 
         # Testing Results Total
         print("\n---------Testing Results---------")
