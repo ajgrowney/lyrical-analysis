@@ -2,7 +2,7 @@ import requests
 import json
 from bs4 import BeautifulSoup
 from test_object import TestAlbumObject
-from metadata_test import album_test
+from test_io import album_test
 
 # Descrption: For testing purposes because snippet used in scrape_album func
 # Param: url { String } - album url to be scraped for metadata
