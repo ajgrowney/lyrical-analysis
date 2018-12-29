@@ -16,6 +16,7 @@ from bs4 import BeautifulSoup
 from Components.node import NodeInterface, ArtistNode, LyricNode
 from Components.graph import GraphObj
 from Components.objects import AlbumObject
+from Tests.test_object import TestAlbumObject
 from Tests.metadata_test import album_test
 
 genius_api_call = {
@@ -333,7 +334,6 @@ def main():
             print lyrical_map.node_map["momma"].timeline
             lyrical_map.node_map[artist["id"]] = new_art
 
-    # TODO: Restructure Suite to only make each http request once
     # Testing Suite
     elif arg_len == 2 and user_input[1] == 'runTests':
 
@@ -344,15 +344,21 @@ def main():
         # Testing Input
         albumtest_input = album_test["input"]
 
-        # Testing Album Title and Year Results
+        # Retrieving Testing Outputs 
         meta_expected = album_test["metadata_output"]
-
-
-        print("\n---------Album Title/Year Testing---------")
+        test_output = []
         for i in range(len(albumtest_input)):
-            returned_title, returned_year, returned_album_id, returned_features, returned_songids  = scrape_album_data("https://genius.com/albums/"+albumtest_input[i])
-            returned_title = returned_title.rstrip()
+            ret_urls = scrape_album_songurls("https://genius.com/albums/"+albumtest_input[i])
+            ret_title, ret_year, ret_album_id, ret_features, ret_songids = scrape_album_data("https://genius.com/albums/"+albumtest_input[i])
+            ret_title = ret_title.rstrip()
+            retAlbumTest = TestAlbumObject(ret_title,ret_year,ret_album_id,ret_features,ret_songids,ret_urls) 
+            test_output.append(retAlbumTest)
 
+        print("\n---------Album Title/Year/ID Testing---------")
+        for i in range(len(albumtest_input)):
+            returned_title = test_output[i].returned_title
+            returned_year = test_output[i].returned_year
+            returned_album_id = test_output[i].returned_album_id
             if(returned_title == meta_expected[i]["title"] and returned_year == meta_expected[i]["year"] and returned_album_id == meta_expected[i]["id"]):
                 print("Test Success: " + meta_expected[i]["title"])
                 successful_tests += 1
@@ -365,7 +371,7 @@ def main():
 
         print("\n---------Album Song URL Testing---------")
         for i in range(len(albumtest_input)):
-            returned_urls = scrape_album_songurls("https://genius.com/albums/"+albumtest_input[i])
+            returned_urls = test_output[i].returned_songurls 
             full_expected = [("https://genius.com/"+s) for s in songurl_expected[i]]
             if(len(returned_urls) == len(full_expected)):
                 error_count = 0
@@ -388,7 +394,7 @@ def main():
 
         print("\n---------Album Features Testing---------")
         for i in range(len(albumtest_input)):
-            _, _, _, returned_features, _ = scrape_album_data("https://genius.com/albums/"+albumtest_input[i])
+            returned_features = test_output[i].returned_features 
             if(returned_features == albumfeatures_expected[i]):
                 successful_tests += 1
                 print("Test Success: " + albumtest_input[i])
@@ -400,7 +406,7 @@ def main():
         songids_expected = album_test["songids_output"]
         print("\n---------Song IDs Testing---------")
         for i in range(len(albumtest_input)):
-            _, _, _,_, returned_songids = scrape_album_data("https://genius.com/albums/"+albumtest_input[i])
+            returned_songids = test_output[i].returned_songids 
             if(returned_songids == songids_expected[i]):
                 successful_tests += 1
                 print("Test Success: " + albumtest_input[i])
