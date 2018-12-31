@@ -52,7 +52,7 @@ def test_album_songurls(url):
     return song_urls
 
 
-def runTests():
+def runTests(json_input, context):
     # Test Data
     successful_tests = 0
     failed_tests = 0
@@ -132,10 +132,11 @@ def runTests():
 
     # Testing Results Total
     print("\n---------Testing Results---------")
+    print("Expected Number of AWS Tests: "+ str(json_input["num_tests"]))
     print("Total Successful Tests: "+ str(successful_tests))
     print("Total Failed Tests: " + str(failed_tests))
     print("Testing Results: " + str(100 * float(successful_tests/(successful_tests+failed_tests))) + "%")
 
 if __name__ == '__main__':
-    runTests()
+    runTests({"num_tests": 20},[])
 
