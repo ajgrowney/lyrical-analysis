@@ -285,9 +285,10 @@ def main():
         jay = {"name": "Jay Z", "id": 2, "album_paths": ["4-44","Magna-carta-holy-grail"]}
         joey = {"name": "Joey Bada$$", "id": 3, "album_paths": ["All-amerikkkan-bada"]}
         logic = {"name": "Logic", "id": 7922, "album_paths": ["Under-pressure","The-incredible-true-story","Bobby-tarantino","Everybody","Bobby-tarantino-ii","Ysiv"]}
-        art_list = [kendrick]
+        art_list = [kendrick,joey,logic]
 
         for artist in art_list: 
+            lyrical_map.artist_choices[artist["name"]] = artist["id"]
             new_art = ArtistNode(artist["name"],artist["id"])
             album_urls = artist["album_paths"]
             new_art.album_urls = album_urls
@@ -310,14 +311,21 @@ def main():
         
         menuChoice = 0
         menu = "1: View Artist Details\n2: View Word Details\n3: Exit\n "
-        while(menuChoice != 4):
+        while(menuChoice != 3):
             print(menu)
             menuChoice = raw_input("Please Select: ")
             if menuChoice == '1':
-                artist = raw_input("Select an artist: ")
-                artist = int(artist)
-                if artist in lyrical_map.node_map:
-                    print lyrical_map.node_map[artist].printDetails()
+                i=1
+                selection = {}
+                for name in lyrical_map.artist_choices:
+                    selection[str(i)] = name
+                    print(i,name)
+                    i += 1
+                choice = raw_input("Select an artist: ")
+                artist = selection[choice]
+                if artist in lyrical_map.artist_choices:
+                    artist_id = lyrical_map.artist_choices[artist]
+                    print lyrical_map.node_map[artist_id].printDetails()
                 else:
                     print("Artist ID not found")
             elif menuChoice == '2':
@@ -327,7 +335,8 @@ def main():
                     print lyrical_map.node_map[word].timeline
                 else:
                     print("Word not found. Try again")
-
+            elif menuChoice == '3':
+                break
 # Testing Suite
     elif arg_len == 2 and user_input[1] == 'runTests':
         print("Testing has moved. To run tests: 'python Tests/test_basic.py'")
