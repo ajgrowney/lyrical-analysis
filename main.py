@@ -297,7 +297,7 @@ def main():
                 single_album,lyrical_map = scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album,lyrical_map)
                 
                 new_art.album_release_years[single_album.title] = single_album.release_year # Add the album year to the artist's node
-                print len(single_album.lyric_results)
+                
                 # Accumulate the albums lyrics to add to edges to artist's node
                 for key,val in single_album.lyric_results.iteritems():
                     if key in running_total:
@@ -305,12 +305,30 @@ def main():
                     else:
                         running_total[key] = val
             real_total = {k:v for k,v in running_total.iteritems() if v != 1}
-            print lyrical_map.node_map["momma"].timeline
-            print lyrical_map.node_map["momma"].song_references
 
             lyrical_map.node_map[artist["id"]] = new_art
+        
+        menuChoice = 0
+        menu = "1: View Artist Details\n2: View Word Details\n3: Exit\n "
+        while(menuChoice != 4):
+            print(menu)
+            menuChoice = raw_input("Please Select: ")
+            if menuChoice == '1':
+                artist = raw_input("Select an artist: ")
+                artist = int(artist)
+                if artist in lyrical_map.node_map:
+                    print lyrical_map.node_map[artist].printDetails()
+                else:
+                    print("Artist ID not found")
+            elif menuChoice == '2':
+                word = raw_input("Type a word to search: ")
+                if word in lyrical_map.node_map:
+                    print lyrical_map.node_map[word].song_references
+                    print lyrical_map.node_map[word].timeline
+                else:
+                    print("Word not found. Try again")
 
-    # Testing Suite
+# Testing Suite
     elif arg_len == 2 and user_input[1] == 'runTests':
         print("Testing has moved. To run tests: 'python Tests/test_basic.py'")
     # Album Data (Temporary) 

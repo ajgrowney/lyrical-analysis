@@ -12,7 +12,12 @@ class ArtistNode(NodeInterface):
         self.album_urls = []
         self.album_release_years = {}
         print "Creating artist node:",self.name, self.id
-    
+    def printDetails(self):
+        print "Name:",self.name
+        print "ID:",self.id
+        print "Album urls searched:",self.album_urls
+        print "Years with albums released:",self.album_release_years
+
     def addAlbumUrl(self,url):
         self.album_urls.append(url)
 
