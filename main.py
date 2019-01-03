@@ -15,7 +15,7 @@ from multiprocessing.pool import ThreadPool as Pool
 from bs4 import BeautifulSoup
 from Components.node import NodeInterface, ArtistNode, LyricNode
 from Components.graph import GraphObj
-from Components.objects import AlbumObject
+from Components.objects import AlbumObject, SongObject
 
 genius_api_call = {
     'token': constants["apikey"],
@@ -56,13 +56,20 @@ def lyric_analysis(song_lyrics):
 
 # Param: url { String } - url of a song to scrape the lyrics from
 # Return: string that holds all the lyrics text
-def scrape_lyrics(url):
+def scrape_song(url):
+    returnSong = SongObject()
     html_page = requests.get(url)
     inner_html = BeautifulSoup(html_page.text, 'html.parser') 
     [element.extract() for element in inner_html('script')]
-
+    # Get Lyrics from the song
     lyrics = inner_html.find('div', class_='lyrics').get_text()
-    return lyrics
+    # Get the song ID
+    metadata = inner_html.find("meta", itemprop="page_data")
+    data = json.loads(metadata["content"].encode('utf-8'))
+    song_id = data["song"]["id"]
+    returnSong.lyrics = lyrics
+    returnSong.id = song_id
+    return returnSong
 
 # Param: url { String } - album url to be scraped for song urls and then processed
 # Param: lyric_map { GraphObj } - graph containing current lyric and artist nodes
@@ -95,22 +102,38 @@ def scrape_album(url,lyric_map):
         print "Error",e
 
     album_results = {}
+    # Get all song urls to scrape from the respective album page
     song_pages = inner_html.findAll('a', {"class": 'u-display_block'}, href=True)
     song_urls = [s["href"] for s in song_pages]
+
     for song in song_urls:
+
+        # Display the song url being scraped
         print song
-        song_lyrics = scrape_lyrics(song)
-        results = (lyric_analysis(song_lyrics))
+        song_result = scrape_song(song)
+        results = (lyric_analysis(song_result.lyrics))
+
+        # res_key = word
+        # res_val = frequency
         for res_key,res_val in results:
-            # Adding lyric to over all map
+
+            # --------Adding lyric to overall map-------
+            # Lyric Exists in the node map
             if res_key in lyric_map.node_map:
                 if returnAlbum.release_year in lyric_map.node_map[res_key].timeline:
                     lyric_map.node_map[res_key].timeline[returnAlbum.release_year] += res_val
                 else:
                     lyric_map.node_map[res_key].timeline[returnAlbum.release_year] = res_val
+                
+                if returnAlbum.release_year in lyric_map.node_map[res_key].song_references:
+                    lyric_map.node_map[res_key].song_references[returnAlbum.release_year].append(song_result.id)
+                else:
+                    lyric_map.node_map[res_key].song_references[returnAlbum.release_year] = [song_result.id]
+
             else:
                 newLyric = LyricNode(res_key)
                 newLyric.timeline[returnAlbum.release_year] = res_val
+                newLyric.song_references[returnAlbum.release_year] = [song_result.id]
                 lyric_map.node_map[res_key] = newLyric
             
             # Adding lyric to individual album results
@@ -186,8 +209,8 @@ def analyze_song(song,artist):
                     print("Cannot analyze song with no verified artists")
                     return
                 if(str(hit['result']['primary_artist']['id']) in verified_artists):
-                    song_lyrics = scrape_lyrics(hit['result']['url'])
-                    return lyric_analysis(song_lyrics)
+                    song_result = scrape_song(hit['result']['url'])
+                    return lyric_analysis(song_result.lyrics)
 
 # Param: range_start- Integer defining beginning artist id to retrieve
 # Param: range_end- Integer defining last artist id to retrieve
@@ -283,14 +306,16 @@ def main():
                         running_total[key] = val
             real_total = {k:v for k,v in running_total.iteritems() if v != 1}
             print lyrical_map.node_map["momma"].timeline
+            print lyrical_map.node_map["momma"].song_references
+
             lyrical_map.node_map[artist["id"]] = new_art
 
     # Testing Suite
     elif arg_len == 2 and user_input[1] == 'runTests':
         print("Testing has moved. To run tests: 'python Tests/test_basic.py'")
     # Album Data (Temporary) 
-    elif arg_len == 2 and user_input[1] == 'albumDataWork':
-        test_album_data("https://genius.com/albums/Logic/Under-pressure")
+    elif arg_len == 2 and user_input[1] == 'songDataWork':
+        scrape_song("https://genius.com/Kendrick-lamar-good-kid-lyrics")
    
     # Improve or Delete
     elif arg_len == 3 and user_input[1] == 'getArtistAtId':

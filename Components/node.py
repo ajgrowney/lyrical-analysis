@@ -23,8 +23,14 @@ class LyricNode(NodeInterface):
     def __init__(self, word):
         self.lyric = word
         self.id = word
+        # Key: ID of a Node
+        # Value: Refernece to that node
         self.adj_list = {}
+        # Key: Year
+        # Value: Number of times used that year
         self.timeline = {}
+        # Key: Year
+        # Value: Song ID
         self.song_references = {}
     def addConnection(self, key, val):
         self.adj_list[key] = val

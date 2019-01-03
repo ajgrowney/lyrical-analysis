@@ -9,3 +9,8 @@ class AlbumObject:
             "unverified": {}
         }
         self.song_ids = {}
+
+class SongObject:
+    def __init__(self):
+        self.lyrics = ""
+        self.id = -1
