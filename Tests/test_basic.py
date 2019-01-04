@@ -1,8 +1,22 @@
 import requests
 import json
 from bs4 import BeautifulSoup
-from test_object import TestAlbumObject
-from test_io import album_test
+from test_object import TestSongObject, TestAlbumObject
+from test_io import song_test, album_test
+
+# Description: For testing purposes because snippet used in scrape_song function
+# Param: url { String } - song url to be scraped for metadata
+# Return: Test Song Object
+def test_song_id(url):
+    html_page = requests.get(url)
+    inner_html = BeautifulSoup(html_page.text, 'html.parser') 
+    [element.extract() for element in inner_html('script')]
+    # Get the song ID
+    metadata = inner_html.find("meta", itemprop="page_data")
+    data = json.loads(metadata["content"].encode('utf-8'))
+    song_id = data["song"]["id"]
+    return song_id 
+    
 
 # Descrption: For testing purposes because snippet used in scrape_album func
 # Param: url { String } - album url to be scraped for metadata
@@ -56,8 +70,27 @@ def runTests(json_input, context):
     # Test Data
     successful_tests = 0
     failed_tests = 0
+    # Song Testing Input
+    songtest_input = song_test["input"]
 
-    # Testing Input
+    songid_expected = song_test["songid_output"]
+    songtest_output = []
+    for i in range(len(songtest_input)):
+        ret_id = test_song_id("https://genius.com/"+songtest_input[i])
+        retSongTest = TestSongObject(ret_id)
+        songtest_output.append(retSongTest)
+    print("\n---------Song ID Testing---------")
+    for i in range(len(songtest_input)):
+        returned_id = songtest_output[i].returned_id
+        if(returned_id == songid_expected[i]):
+            print("Test Success: " + songtest_input[i])
+            successful_tests += 1
+        else:
+            print("Test Failed: " + songtest_input[i])
+            print(returned_id,songid_expected[i])
+            failed_tests += 1
+
+    # Album Testing Input
     albumtest_input = album_test["input"]
 
     # Retrieving Testing Outputs 

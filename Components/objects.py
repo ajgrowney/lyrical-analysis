@@ -14,3 +14,4 @@ class SongObject:
     def __init__(self):
         self.lyrics = ""
         self.id = -1
+        self.title = ""

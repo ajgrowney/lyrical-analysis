@@ -6,3 +6,7 @@ class TestAlbumObject:
         self.returned_features = feat
         self.returned_songids = song_ids
         self.returned_songurls = song_urls
+
+class TestSongObject:
+    def __init__(self,s_id):
+        self.returned_id = s_id

@@ -1,3 +1,17 @@
+song_test = {
+    "input":[
+        "Kendrick-lamar-poetic-justice-lyrics",
+        "Kendrick-lamar-good-kid-lyrics",
+        "Logic-metropolis-lyrics",
+        "Logic-lord-willin-lyrics"
+    ],
+    "songid_output":[
+        92856,
+        90477,
+        528260,
+        2338720
+    ]
+}
 album_test = {
     "input": [
         "Kendrick-lamar/To-pimp-a-butterfly",

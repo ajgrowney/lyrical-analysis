@@ -67,13 +67,15 @@ def scrape_song(url):
     metadata = inner_html.find("meta", itemprop="page_data")
     data = json.loads(metadata["content"].encode('utf-8'))
     song_id = data["song"]["id"]
+    song_title = data["song"]["title"]
     returnSong.lyrics = lyrics
     returnSong.id = song_id
+    returnSong.title = song_title
     return returnSong
 
 # Param: url { String } - album url to be scraped for song urls and then processed
 # Param: lyric_map { GraphObj } - graph containing current lyric and artist nodes
-# Return: { AlbumObject } - Album Object containing all the album's data and lyric results
+# Return: { AlbumObject, GraphObj } - Album Object containing all the album's data and lyric results, Updated Graph Object
 def scrape_album(url,lyric_map):
     returnAlbum = AlbumObject()
     html_page = requests.get(url)
@@ -112,7 +114,7 @@ def scrape_album(url,lyric_map):
         print song
         song_result = scrape_song(song)
         results = (lyric_analysis(song_result.lyrics))
-
+        lyric_map.song_id_title[song_result.id] = song_result.title 
         # res_key = word
         # res_val = frequency
         for res_key,res_val in results:
@@ -126,14 +128,14 @@ def scrape_album(url,lyric_map):
                     lyric_map.node_map[res_key].timeline[returnAlbum.release_year] = res_val
                 
                 if returnAlbum.release_year in lyric_map.node_map[res_key].song_references:
-                    lyric_map.node_map[res_key].song_references[returnAlbum.release_year].append(song_result.id)
+                    lyric_map.node_map[res_key].song_references[returnAlbum.release_year].append((song_result.id,song_result.title))
                 else:
-                    lyric_map.node_map[res_key].song_references[returnAlbum.release_year] = [song_result.id]
+                    lyric_map.node_map[res_key].song_references[returnAlbum.release_year] = [(song_result.id,song_result.title)]
 
             else:
                 newLyric = LyricNode(res_key)
                 newLyric.timeline[returnAlbum.release_year] = res_val
-                newLyric.song_references[returnAlbum.release_year] = [song_result.id]
+                newLyric.song_references[returnAlbum.release_year] = [(song_result.id,song_result.title)]
                 lyric_map.node_map[res_key] = newLyric
             
             # Adding lyric to individual album results
@@ -266,7 +268,38 @@ def integrateArtist(artNode):
     except requests.exceptions.HTTPError as e:
         print(e)
     return artNode
-    
+
+# Param: lyric_map { GraphObj } - Graph object that holds node map to traverse
+# Return: Nothing - returns when user requests to exit
+def menuNavigation(lyric_map):
+    menuChoice = 0
+    menu = "1: View Artist Details\n2: View Word Details\n3: Exit\n "
+    while(menuChoice != 3):
+        print(menu)
+        menuChoice = raw_input("Please Select: ")
+        if menuChoice == '1':
+            i=1
+            selection = {}
+            for name in lyric_map.artist_choices:
+                selection[str(i)] = name
+                print(i,name)
+                i += 1
+            choice = raw_input("Select an artist: ")
+            artist = selection[choice]
+            if artist in lyric_map.artist_choices:
+                artist_id = lyric_map.artist_choices[artist]
+                print lyric_map.node_map[artist_id].printDetails()
+            else:
+                print("Artist ID not found")
+        elif menuChoice == '2':
+            word = raw_input("Type a word to search: ")
+            if word in lyric_map.node_map:
+                print lyric_map.node_map[word].song_references
+                print lyric_map.node_map[word].timeline
+            else:
+                print("Word not found. Try again")
+        elif menuChoice == '3':
+            return
 
 # Description: Supports two main calls as of now:
 # 
@@ -285,7 +318,7 @@ def main():
         jay = {"name": "Jay Z", "id": 2, "album_paths": ["4-44","Magna-carta-holy-grail"]}
         joey = {"name": "Joey Bada$$", "id": 3, "album_paths": ["All-amerikkkan-bada"]}
         logic = {"name": "Logic", "id": 7922, "album_paths": ["Under-pressure","The-incredible-true-story","Bobby-tarantino","Everybody","Bobby-tarantino-ii","Ysiv"]}
-        art_list = [kendrick,joey,logic]
+        art_list = [kendrick,joey]
 
         for artist in art_list: 
             lyrical_map.artist_choices[artist["name"]] = artist["id"]
@@ -308,36 +341,9 @@ def main():
             real_total = {k:v for k,v in running_total.iteritems() if v != 1}
 
             lyrical_map.node_map[artist["id"]] = new_art
-        
-        menuChoice = 0
-        menu = "1: View Artist Details\n2: View Word Details\n3: Exit\n "
-        while(menuChoice != 3):
-            print(menu)
-            menuChoice = raw_input("Please Select: ")
-            if menuChoice == '1':
-                i=1
-                selection = {}
-                for name in lyrical_map.artist_choices:
-                    selection[str(i)] = name
-                    print(i,name)
-                    i += 1
-                choice = raw_input("Select an artist: ")
-                artist = selection[choice]
-                if artist in lyrical_map.artist_choices:
-                    artist_id = lyrical_map.artist_choices[artist]
-                    print lyrical_map.node_map[artist_id].printDetails()
-                else:
-                    print("Artist ID not found")
-            elif menuChoice == '2':
-                word = raw_input("Type a word to search: ")
-                if word in lyrical_map.node_map:
-                    print lyrical_map.node_map[word].song_references
-                    print lyrical_map.node_map[word].timeline
-                else:
-                    print("Word not found. Try again")
-            elif menuChoice == '3':
-                break
-# Testing Suite
+        menuNavigation(lyrical_map) 
+   
+   # Testing Suite
     elif arg_len == 2 and user_input[1] == 'runTests':
         print("Testing has moved. To run tests: 'python Tests/test_basic.py'")
     # Album Data (Temporary) 
