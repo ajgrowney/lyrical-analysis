@@ -2,7 +2,6 @@
 # https://medium.com/@ageitgey/quick-tip-speed-up-your-python-data-processing-scripts-with-process-pools-cf275350163a
 # https://dev.to/willamesoares/how-to-integrate-spotify-and-genius-api-to-easily-crawl-song-lyrics-with-python-4o62
 
-
 import json
 import os
 import operator
@@ -115,18 +114,19 @@ def scrape_album(url,lyric_map):
         song_result = scrape_song(song)
         results = (lyric_analysis(song_result.lyrics))
         lyric_map.song_id_title[song_result.id] = song_result.title 
-        # res_key = word
-        # res_val = frequency
+
+        # Dict Traversal: res_key, res_val = word, frequency
         for res_key,res_val in results:
 
             # --------Adding lyric to overall map-------
             # Lyric Exists in the node map
             if res_key in lyric_map.node_map:
+                # Check if the lyric is in the timeline
                 if returnAlbum.release_year in lyric_map.node_map[res_key].timeline:
                     lyric_map.node_map[res_key].timeline[returnAlbum.release_year] += res_val
                 else:
                     lyric_map.node_map[res_key].timeline[returnAlbum.release_year] = res_val
-                
+                # Check if the year with the lyric has been created in the song references already 
                 if returnAlbum.release_year in lyric_map.node_map[res_key].song_references:
                     lyric_map.node_map[res_key].song_references[returnAlbum.release_year].append((song_result.id,song_result.title))
                 else:
@@ -247,28 +247,6 @@ def getArtistIdRange(range_start,range_end,filename):
     json.dump({"errors": errors}, open(err_path, "w"))
     return errors
 
-
-# ------- In Progress -------------
-def integrateArtist(artNode):
-    url = genius_api_call['base']
-    headers = {'Authorization': 'Bearer ' + genius_api_call['token']}
-    print(artNode.id)
-    try:
-        res = requests.get(url+'/artists/'+str(artNode.id)+'/songs', headers=headers).json()
-        if res['meta']['status'] == 200:
-           for song in res['response']['songs']:
-                if song['primary_artist']['id'] == artNode.id:
-                    results = analyze_song(artNode.name,song['title'])
-                    for res_key, res_val in results:
-                        if res_key in artNode.adj_list:
-                            artNode.adj_list[res_key] += res_val
-                        else:
-                            artNode.adj_list[res_key] = res_val
-                    #print artNode.adj_list['in']
-    except requests.exceptions.HTTPError as e:
-        print(e)
-    return artNode
-
 # Param: lyric_map { GraphObj } - Graph object that holds node map to traverse
 # Return: Nothing - returns when user requests to exit
 def menuNavigation(lyric_map):
@@ -302,7 +280,6 @@ def menuNavigation(lyric_map):
             return
 
 # Description: Supports two main calls as of now:
-# 
 # Song Search Analysis: takes in a song and artist, prints out top fifteen most used lyrics with option to exclude certain words
 # Song Search Ex: python main.py 'search' "Element" "Kung Fu Kenny"
 # Artist Id Retreival: takes in a range to make artist id api calls, creates a json file full of names that belong to that artist ID
@@ -358,14 +335,6 @@ def main():
         except:
             print "Artist Not Found at id:",user_input[2]
     
-    # Must be improved or deleted
-    elif arg_len == 3 and user_input[1] == 'addArtist':        
-        
-        artist_name = user_input[2]
-        new_art = ArtistNode(artist_name,7922)
-        integrateArtist(new_art)
-        print("Results: ",new_art.adj_list)
-
     # Can be used for testing
     elif arg_len == 4 and user_input[1] == 'searchSingleSong':
         song, artist = user_input[2], user_input[3]

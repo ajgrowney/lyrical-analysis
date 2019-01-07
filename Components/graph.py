@@ -1,9 +1,9 @@
 
 class GraphObj:
     def __init__(self):
-        # Map for the Artist Search Menu
+        # Map for the Artist Search Menu {name: id}
         self.artist_choices = {}        
-        # Map to access specific nodes
+        # Map to access specific nodes {id: NodeObject}
         self.node_map = {}
-        # Map Song ID to Title
+        # Maps Song ID to Title {id: title}
         self.song_id_title = {}
