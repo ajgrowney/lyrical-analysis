@@ -105,7 +105,6 @@ album_test = {
             "Logic-run-it-lyrics",
             "Logic-lucidity-scene-lyrics",
             "Logic-the-incredible-true-story-lyrics",
-            "Logic-the-incredible-true-story-trailer-lyrics",
             "Logic-the-incredible-true-story-tracklist-album-cover-annotated",
             "Logic-the-incredible-true-story-credits-lyrics"
         ]
@@ -119,7 +118,7 @@ album_test = {
         {'verified': {1745: 'Childish Gambino', 492: 'Big Sean'},
          'unverified': {}},
         {'verified': {569307: 'Big Lenbo', 12636: 'Jesse Boykins III'},
-         'unverified': {213416: 'Dria', 27710: 'Kevin Randolph', 561494: 'Anna Elyse Palchikoff', 71478: 'Lucy Rose', 561493: 'Steve Blum'}}
+         'unverified': {213416: 'Dria', 71478: 'Lucy Rose'}}
     ],
     "songids_output": [
         {
@@ -157,7 +156,6 @@ album_test = {
             2313673: "The Incredible True Story [Tracklist + Album Cover]",
             2338720: "Lord Willin'",
             2343638: "Lucidity (Scene)",
-            2300278: "The Incredible True Story (Trailer)",
             2327079: "Like Woah",
             2343640: "The Incredible True Story",
             2343628: "Innermission",

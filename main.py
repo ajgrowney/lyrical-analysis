@@ -9,12 +9,14 @@ import sys
 import time
 import requests
 import concurrent.futures
+import matplotlib.pyplot as plt
 from constants import constants
 from multiprocessing.pool import ThreadPool as Pool
 from bs4 import BeautifulSoup
 from Components.node import NodeInterface, ArtistNode, LyricNode
 from Components.graph import GraphObj
 from Components.objects import AlbumObject, SongObject
+from Data.artist_setup import artists_data
 
 genius_api_call = {
     'token': constants["apikey"],
@@ -66,7 +68,7 @@ def scrape_song(url):
     metadata = inner_html.find("meta", itemprop="page_data")
     data = json.loads(metadata["content"].encode('utf-8'))
     song_id = data["song"]["id"]
-    song_title = data["song"]["title"]
+    song_title = data["song"]["title"].encode('ascii','ignore').decode('utf-8')
     returnSong.lyrics = lyrics
     returnSong.id = song_id
     returnSong.title = song_title
@@ -110,10 +112,10 @@ def scrape_album(url,lyric_map):
     for song in song_urls:
 
         # Display the song url being scraped
-        print song
         song_result = scrape_song(song)
         results = (lyric_analysis(song_result.lyrics))
         lyric_map.song_id_title[song_result.id] = song_result.title 
+        print(song_result.title)
 
         # Dict Traversal: res_key, res_val = word, frequency
         for res_key,res_val in results:
@@ -121,17 +123,10 @@ def scrape_album(url,lyric_map):
             # --------Adding lyric to overall map-------
             # Lyric Exists in the node map
             if res_key in lyric_map.node_map:
-                # Check if the lyric is in the timeline
-                if returnAlbum.release_year in lyric_map.node_map[res_key].timeline:
-                    lyric_map.node_map[res_key].timeline[returnAlbum.release_year] += res_val
-                else:
-                    lyric_map.node_map[res_key].timeline[returnAlbum.release_year] = res_val
-                # Check if the year with the lyric has been created in the song references already 
-                if returnAlbum.release_year in lyric_map.node_map[res_key].song_references:
-                    lyric_map.node_map[res_key].song_references[returnAlbum.release_year].append((song_result.id,song_result.title))
-                else:
-                    lyric_map.node_map[res_key].song_references[returnAlbum.release_year] = [(song_result.id,song_result.title)]
-
+                # Add Lyric to Timeline of the Lyric Node
+                lyric_map.node_map[res_key].addLyricTimeline(returnAlbum.release_year,res_val)
+                # Add Lyric to the Song References of the Lyric Node
+                lyric_map.node_map[res_key].addLyricSongReferences(returnAlbum.release_year,song_result.id, song_result.title)
             else:
                 newLyric = LyricNode(res_key)
                 newLyric.timeline[returnAlbum.release_year] = res_val
@@ -274,6 +269,13 @@ def menuNavigation(lyric_map):
             if word in lyric_map.node_map:
                 print lyric_map.node_map[word].song_references
                 print lyric_map.node_map[word].timeline
+                refs = lyric_map.node_map[word].song_references
+                chart = plt.bar(list(lyric_map.node_map[word].timeline.keys()), lyric_map.node_map[word].timeline.values(), color='g')
+                for rect, year in zip(chart, refs.keys()):
+                    height = rect.get_height()
+                    plt.text(rect.get_x() + rect.get_width()/2.0, height, ("\n".join((x[1] for x in (refs[year])))), ha='center', va='bottom')
+                plt.legend()
+                plt.show()
             else:
                 print("Word not found. Try again")
         elif menuChoice == '3':
@@ -291,11 +293,8 @@ def main():
     # In Progress: Main Functionality
     if arg_len == 2 and user_input[1] == 'artistMapInitial':
         lyrical_map = GraphObj()
-        kendrick = {"name": "Kendrick Lamar", "id": 1421, "album_paths": ["Good-kid-m-a-a-d-city","To-pimp-a-butterfly"]}
-        jay = {"name": "Jay Z", "id": 2, "album_paths": ["4-44","Magna-carta-holy-grail"]}
-        joey = {"name": "Joey Bada$$", "id": 3, "album_paths": ["All-amerikkkan-bada"]}
-        logic = {"name": "Logic", "id": 7922, "album_paths": ["Under-pressure","The-incredible-true-story","Bobby-tarantino","Everybody","Bobby-tarantino-ii","Ysiv"]}
-        art_list = [kendrick,joey]
+
+        art_list = [artists_data["kendrick"],artists_data["joey"]]
 
         for artist in art_list: 
             lyrical_map.artist_choices[artist["name"]] = artist["id"]
@@ -315,7 +314,6 @@ def main():
                         running_total[key] += val
                     else:
                         running_total[key] = val
-            real_total = {k:v for k,v in running_total.iteritems() if v != 1}
 
             lyrical_map.node_map[artist["id"]] = new_art
         menuNavigation(lyrical_map) 
