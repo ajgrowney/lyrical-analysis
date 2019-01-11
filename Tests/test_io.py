@@ -57,6 +57,7 @@ album_test = {
             "Kendrick-lamar-backseat-freestyle-lyrics",
             "Kendrick-lamar-the-art-of-peer-pressure-lyrics",
             "Kendrick-lamar-money-trees-lyrics",
+            "Kendrick-lamar-money-trees-og-lyrics",
             "Kendrick-lamar-poetic-justice-lyrics",
             "Kendrick-lamar-good-kid-lyrics",
             "Kendrick-lamar-maad-city-lyrics",

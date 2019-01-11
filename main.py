@@ -269,13 +269,13 @@ def menuNavigation(lyric_map):
             if word in lyric_map.node_map:
                 print lyric_map.node_map[word].song_references
                 print lyric_map.node_map[word].timeline
-                refs = lyric_map.node_map[word].song_references
-                chart = plt.bar(list(lyric_map.node_map[word].timeline.keys()), lyric_map.node_map[word].timeline.values(), color='g')
-                for rect, year in zip(chart, refs.keys()):
-                    height = rect.get_height()
-                    plt.text(rect.get_x() + rect.get_width()/2.0, height, ("\n".join((x[1] for x in (refs[year])))), ha='center', va='bottom')
-                plt.legend()
-                plt.show()
+                #refs = lyric_map.node_map[word].song_references
+                #chart = plt.bar(list(lyric_map.node_map[word].timeline.keys()), lyric_map.node_map[word].timeline.values(), color='g')
+                #for rect, year in zip(chart, refs.keys()):
+                #    height = rect.get_height()
+                #    plt.text(rect.get_x() + rect.get_width()/2.0, height, ("\n".join((x[1] for x in (refs[year])))), ha='center', va='bottom')
+                #plt.legend()
+                #plt.show()
             else:
                 print("Word not found. Try again")
         elif menuChoice == '3':
@@ -289,12 +289,19 @@ def menuNavigation(lyric_map):
 def main():
     arg_len = len(sys.argv)
     user_input = sys.argv
-
+    if arg_len == 3 and user_input[1] == 'findArtistId':
+        url = genius_api_call['base']
+        params = {'q': user_input[2]}
+        headers = {'Authorization': 'Bearer ' + genius_api_call['token']}
+        res = requests.get(url+'/search',params=params, headers=headers).json()
+        if res['meta']['status'] == 200:
+            artist = res['response']['hits'][0]['result']['primary_artist']
+            print(artist['name'],artist['id'])
     # In Progress: Main Functionality
     if arg_len == 2 and user_input[1] == 'artistMapInitial':
         lyrical_map = GraphObj()
 
-        art_list = [artists_data["kendrick"],artists_data["joey"]]
+        art_list = [artists_data["pusha"],artists_data["chance"],artists_data["meek"],artists_data["kendrick"],artists_data["joey"]]
 
         for artist in art_list: 
             lyrical_map.artist_choices[artist["name"]] = artist["id"]
