@@ -5,18 +5,22 @@ class NodeInterface:
 
 class ArtistNode(NodeInterface):
     def __init__(self, name_in, id_in):
+        search_str = name_in.replace(' ','-').replace('$','').lower().capitalize()
         self.name = name_in
         self.id = id_in # Genius Artist ID
         self.adj_list = {}
-        self.album_search_str = name_in.replace(' ','-').replace('$','')
+        self.album_search_str = search_str 
         self.album_urls = []
+        self.album_suggested = {}
         self.album_release_years = {}
         print "Creating artist node:",self.name, self.id
+        print self.album_search_str
     
     def printDetails(self):
         print "Name:",self.name
         print "ID:",self.id
         print "Album urls searched:",self.album_urls
+        print "Albums suggested to search:",self.album_suggested
         print "Years with albums released:",self.album_release_years
 
     def addAlbumUrl(self,url):

@@ -87,6 +87,14 @@ def scrape_album(url,lyric_map):
         # Scrape Album Metadata
         metadata = inner_html.find("meta", itemprop="page_data")
         data = json.loads(metadata["content"].encode('utf-8'))
+        
+        # Get other albums as suggestions to search
+        for album in data["other_albums_by_artist"]:
+            alb_url = album["url"]
+            alb_url = alb_url.replace("https://genius.com/albums/","")
+            returnAlbum.other_albums.append({album["name"]: alb_url})
+        
+        # Add album features to the album object returned
         for appearance in data["album_appearances"]:
             song_title = appearance["song"]["title"].encode('ascii','ignore').decode('utf-8')
             returnAlbum.song_ids[appearance["song"]["id"]] = song_title
@@ -302,17 +310,25 @@ def main():
         lyrical_map = GraphObj()
 
         art_list = [artists_data["pusha"],artists_data["chance"],artists_data["meek"],artists_data["kendrick"],artists_data["joey"]]
+        
+        for artist in art_list:
 
-        for artist in art_list: 
+            # Add Search Capabilities for artist to graph object
             lyrical_map.artist_choices[artist["name"]] = artist["id"]
+
+            # Create new artist node
             new_art = ArtistNode(artist["name"],artist["id"])
             album_urls = artist["album_paths"]
             new_art.album_urls = album_urls
-
+            suggested_albums = {}
             running_total = {}        
             for album in new_art.album_urls:
                 single_album,lyrical_map = scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album,lyrical_map)
                 
+                # Add other albums found to suggested searches for an artist
+                for alb in (single_album.other_albums): 
+                    suggested_albums.update(alb)
+                # Add the release year of the album to artist's release years
                 new_art.album_release_years[single_album.title] = single_album.release_year # Add the album year to the artist's node
                 
                 # Accumulate the albums lyrics to add to edges to artist's node
@@ -321,24 +337,17 @@ def main():
                         running_total[key] += val
                     else:
                         running_total[key] = val
-
+            for t,u in suggested_albums.iteritems():
+                u = u.replace(new_art.album_search_str+"/",'')
+                if u not in new_art.album_urls:
+                    new_art.album_suggested[u] = t
             lyrical_map.node_map[artist["id"]] = new_art
         menuNavigation(lyrical_map) 
    
    # Testing Suite
     elif arg_len == 2 and user_input[1] == 'runTests':
         print("Testing has moved. To run tests: 'python Tests/test_basic.py'")
-    # Album Data (Temporary) 
-    elif arg_len == 2 and user_input[1] == 'songDataWork':
-        scrape_song("https://genius.com/Kendrick-lamar-good-kid-lyrics")
    
-    # Improve or Delete
-    elif arg_len == 3 and user_input[1] == 'getArtistAtId':
-        try:
-            artist = verified_artists[user_input[2]]
-            print verified_artists[user_input[2]]['name']
-        except:
-            print "Artist Not Found at id:",user_input[2]
     
     # Can be used for testing
     elif arg_len == 4 and user_input[1] == 'searchSingleSong':

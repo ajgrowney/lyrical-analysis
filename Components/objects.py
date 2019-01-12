@@ -4,6 +4,8 @@ class AlbumObject:
         self.title = ""
         self.release_year = -1
         self.lyric_results = {}
+        # Holds dicts with key: title, val: url of album
+        self.other_albums = []
         self.features = {
             "verified": {},
             "unverified": {}

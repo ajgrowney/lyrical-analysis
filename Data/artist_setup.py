@@ -6,5 +6,6 @@ artists_data = {
     "meek": {"name": "Meek Mill", "id": 1319, "album_paths": ["Championships"]},
     "chance": {"name": "Chance the Rapper", "id": 16751, "album_paths": ["Coloring-book"]},
     "pusha": {"name": "Pusha-T", "id": 643, "album_paths": ["Daytona"]},
-    "travis": {"name": "Travis Scott", "id": 20185, "album_paths": ["Astroworld"]}
+    "travis": {"name": "Travis Scott", "id": 20185, "album_paths": ["Astroworld"]},
+    "big_sean": {"name": "Big Sean", "id": 492, "album_paths": ["Finally-famous"]}
 }
