@@ -118,8 +118,9 @@ album_test = {
          'unverified': {130: 'Drake', 123: u'Dr.\xa0Dre', 4637: 'MC Eiht', 2434: 'Anna Wise'}},
         {'verified': {1745: 'Childish Gambino', 492: 'Big Sean'},
          'unverified': {}},
-        {'verified': {569307: 'Big Lenbo', 12636: 'Jesse Boykins III'},
-         'unverified': {213416: 'Dria', 71478: 'Lucy Rose'}}
+        {'verified': {569307: 'Big Lenbo', 12636: 'Jesse Boykins III', 71478:
+        'Lucy Rose'},
+         'unverified': {213416: 'Dria'}}
     ],
     "songids_output": [
         {
@@ -148,7 +149,7 @@ album_test = {
             721659: 'King Kunta'
         },
         {
-            79008: 'The Art of Peer Pressure', 90471: 'Compton', 81159: 'Swimming Pools (Drank)', 90472: "Sherane a.k.a Master Splinter's Daughter", 90473: "Bitch, Don't Kill My Vibe", 90475: 'Money Trees', 90477: 'good kid', 90478: 'm.A.A.d city', 90479: "Sing About Me, I'm Dying of Thirst", 90480: 'Real', 92853: 'Backseat Freestyle', 207318: 'good kid, m.A.A.d city [Credits]', 92856: 'Poetic Justice', 2432122: 'good kid, m.A.A.d city [Booklet]'},
+            79008: 'The Art of Peer Pressure', 90471: 'Compton', 81159: 'Swimming Pools (Drank)', 90472: "Sherane a.k.a Master Splinter's Daughter", 90473: "Bitch, Don't Kill My Vibe", 90475: 'Money Trees', 4198624: 'Money Trees (OG)', 90477: 'good kid', 90478: 'm.A.A.d city', 90479: "Sing About Me, I'm Dying of Thirst", 90480: 'Real', 92853: 'Backseat Freestyle', 207318: 'good kid, m.A.A.d city [Credits]', 92856: 'Poetic Justice', 2432122: 'good kid, m.A.A.d city [Booklet]'},
         {
             528258: 'Till the End', 528260: 'Metropolis', 197351: 'Alright', 523560: 'Gang Related', 526729: "I'm Gone", 528266: 'Soul Food', 544491: 'Nikki', 516317: 'Under Pressure - Album Cover and Tracklist', 398797: 'Now', 528271: 'Buried Alive', 528304: 'Growing Pains III', 528306: 'Never Enough', 528275: 'Bounce', 519316: 'Under Pressure', 528311: 'Intro', 506780: 'Driving Ms. Daisy', 624498: 'Under Pressure [Credits]'},
         {

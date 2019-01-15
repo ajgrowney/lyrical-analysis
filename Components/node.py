@@ -19,6 +19,17 @@ class ArtistNode(NodeInterface):
     def printDetails(self):
         print "Name:",self.name
         print "ID:",self.id
+        num_lyrics = 0
+        total_word_length = 0
+        unique_lyrics = 0 
+        for key,val in self.adj_list.iteritems():
+            num_lyrics += val
+            total_word_length += len(key.lyric)*val
+            unique_lyrics += 1
+        print "Number of lyrics searched:",num_lyrics
+        print "Number of unique lyrics:", unique_lyrics
+        print "Unique Lyric Ratio:", str(unique_lyrics/float(num_lyrics))
+        print "Average lyric length:", str(total_word_length/float(num_lyrics))
         print "Album urls searched:",self.album_urls
         print "Albums suggested to search:",self.album_suggested
         print "Years with albums released:",self.album_release_years

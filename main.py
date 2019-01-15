@@ -310,7 +310,6 @@ def main():
         lyrical_map = GraphObj()
 
         art_list = [artists_data["pusha"],artists_data["chance"],artists_data["meek"],artists_data["kendrick"],artists_data["joey"]]
-        
         for artist in art_list:
 
             # Add Search Capabilities for artist to graph object
@@ -321,7 +320,6 @@ def main():
             album_urls = artist["album_paths"]
             new_art.album_urls = album_urls
             suggested_albums = {}
-            running_total = {}        
             for album in new_art.album_urls:
                 single_album,lyrical_map = scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album,lyrical_map)
                 
@@ -333,10 +331,13 @@ def main():
                 
                 # Accumulate the albums lyrics to add to edges to artist's node
                 for key,val in single_album.lyric_results.iteritems():
-                    if key in running_total:
-                        running_total[key] += val
+                    artist_connections = new_art.adj_list
+                    cur_lyric = lyrical_map.node_map[key]
+                    if cur_lyric in artist_connections:
+                        artist_connections[cur_lyric] += val
                     else:
-                        running_total[key] = val
+                        artist_connections[cur_lyric] = val
+
             for t,u in suggested_albums.iteritems():
                 u = u.replace(new_art.album_search_str+"/",'')
                 if u not in new_art.album_urls:
