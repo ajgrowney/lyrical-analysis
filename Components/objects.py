@@ -11,6 +11,7 @@ class AlbumObject:
             "unverified": {}
         }
         self.song_ids = {}
+        self.song_urls = []
 
 class SongObject:
     def __init__(self):

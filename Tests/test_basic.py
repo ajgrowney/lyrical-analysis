@@ -4,6 +4,11 @@ from bs4 import BeautifulSoup
 from test_object import TestSongObject, TestAlbumObject
 from test_io import song_test, album_test
 
+# Constants to test being used by main functions
+constants = {
+    "song_title_ignore": ("[Credits]", "[Tracklist + Album Art]","[Tracklist + Album Cover]", "[Booklet]"),
+}
+
 # Description: For testing purposes because snippet used in scrape_song function
 # Param: url { String } - song url to be scraped for metadata
 # Return: Test Song Object
@@ -20,7 +25,7 @@ def test_song_id(url):
 
 # Descrption: For testing purposes because snippet used in scrape_album func
 # Param: url { String } - album url to be scraped for metadata
-# Return: String, Int, Int, Dict - album name, the year it was released, album id, and features
+# Return: String, Int, Int, Dict, List - album name, the year it was released, album id, features, song urls
 def test_album_data(url):
     html_page = requests.get(url)
     inner_html = BeautifulSoup(html_page.content, 'html.parser')
@@ -33,9 +38,12 @@ def test_album_data(url):
         # Strip album features and song id with titles
         album_features = {"verified": {}, "unverified": {}}
         album_song_id = {}
+        album_song_urls = []
         for ap in appearances:
             s = ap["song"]["title"].encode('ascii','ignore').decode('utf-8')
-            album_song_id[ap["song"]["id"]] = s
+            if (not s.endswith(constants["song_title_ignore"])) and (not ap["song"]["url"].endswith("-annotated")):
+                album_song_id[ap["song"]["id"]] = s
+                album_song_urls.append(ap["song"]["url"])
             for feature in ap["song"]["featured_artists"]:
                 if feature["is_verified"]:
                     if (feature["id"] not in album_features["verified"]):
@@ -50,20 +58,20 @@ def test_album_data(url):
         album_name = data["album"]['name']
         release_year = data["album"]["release_date_components"]["year"]
         album_id = data["album"]["id"]
-        return album_name, release_year, album_id, album_features, album_song_id
+        return album_name, release_year, album_id, album_features, album_song_id, album_song_urls
     except UnicodeEncodeError as e:
         print "Error",e
 
 # Description: For testing purposes because snippet used in scrape_album
 # Param url { String } - album url to be scraped for song urls
 # Return: List<String> - song urls that scrape album will scrape 
-def test_album_songurls(url):
-    html_page = requests.get(url)
-    inner_html = BeautifulSoup(html_page.content, 'html.parser')
-    [el.extract() for el in inner_html('script')]
-    song_pages = inner_html.findAll('a', {"class": 'u-display_block'}, href=True)
-    song_urls = [s["href"] for s in song_pages]
-    return song_urls
+# def test_album_songurls(url):
+#     html_page = requests.get(url)
+#     inner_html = BeautifulSoup(html_page.content, 'html.parser')
+#     [el.extract() for el in inner_html('script')]
+#     song_pages = inner_html.findAll('a', {"class": 'u-display_block'}, href=True)
+#     song_urls = [s["href"] for s in song_pages]
+#     return song_urls
 
 
 def runTests(json_input, context):
@@ -97,8 +105,7 @@ def runTests(json_input, context):
     meta_expected = album_test["metadata_output"]
     test_output = []
     for i in range(len(albumtest_input)):
-        ret_urls = test_album_songurls("https://genius.com/albums/"+albumtest_input[i])
-        ret_title, ret_year, ret_album_id, ret_features, ret_songids = test_album_data("https://genius.com/albums/"+albumtest_input[i])
+        ret_title, ret_year, ret_album_id, ret_features, ret_songids,ret_urls = test_album_data("https://genius.com/albums/"+albumtest_input[i])
         ret_title = ret_title.rstrip()
         retAlbumTest = TestAlbumObject(ret_title,ret_year,ret_album_id,ret_features,ret_songids,ret_urls) 
         test_output.append(retAlbumTest)

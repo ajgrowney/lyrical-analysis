@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 from node import ArtistNode
 from functions import scrape_song, scrape_album
 
@@ -35,18 +36,20 @@ class GraphObj:
                 if word in self.node_map:
                     print self.node_map[word].song_references
                     print self.node_map[word].timeline
-                    #refs = self.node_map[word].song_references
-                    #chart = plt.bar(list(self.node_map[word].timeline.keys()), self.node_map[word].timeline.values(), color='g')
-                    #for rect, year in zip(chart, refs.keys()):
-                    #    height = rect.get_height()
-                    #    plt.text(rect.get_x() + rect.get_width()/2.0, height, ("\n".join((x[1] for x in (refs[year])))), ha='center', va='bottom')
-                    #plt.legend()
-                    #plt.show()
+                    refs = self.node_map[word].song_references
+                    chart = plt.bar(list(self.node_map[word].timeline.keys()), self.node_map[word].timeline.values(), color='g')
+                    for rect, year in zip(chart, refs.keys()):
+                        height = rect.get_height()
+                        plt.text(rect.get_x() + rect.get_width()/2.0, height, ("\n".join((x[1] for x in (refs[year])))), ha='center', va='bottom')
+                    plt.legend()
+                    plt.show()
                 else:
                     print("Word not found. Try again")
             elif menuChoice == '3':
                 return
+    
     def addNewArtist(self, artist):
+
         if artist["id"] not in self.node_map:
             # Add Search Capabilities for artist to self object
             self.artist_choices[artist["name"]] = artist["id"]
@@ -57,7 +60,7 @@ class GraphObj:
             new_art.album_urls = album_urls
             suggested_albums = {}
             for album in new_art.album_urls:
-                single_album,self = scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album,self)
+                single_album, self = scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album,self)
                 
                 # Add other albums found to suggested searches for an artist
                 for alb in (single_album.other_albums): 
@@ -80,5 +83,5 @@ class GraphObj:
                 if sug_url not in new_art.album_urls:
                     new_art.album_suggested[sug_url] = sug_title
             self.node_map[artist["id"]] = new_art
-        return self
-    
+        else:
+            print "Artist is already in the graph"

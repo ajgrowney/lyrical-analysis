@@ -1,7 +1,5 @@
 import json
-import os
 import operator
-import sys
 import requests
 from constants import constants
 from bs4 import BeautifulSoup
@@ -75,7 +73,12 @@ def scrape_album(url,lyric_map):
         # Add album features to the album object returned
         for appearance in data["album_appearances"]:
             song_title = appearance["song"]["title"].encode('ascii','ignore').decode('utf-8')
-            returnAlbum.song_ids[appearance["song"]["id"]] = song_title
+            
+            # Remove all songs that are Genius Annotation Tracks and Booklet, Covers, etc. to scrape only the real songs
+            if (not song_title.endswith(constants["song_title_ignore"])) and (not appearance["song"]["url"].endswith("-annotated")): 
+                returnAlbum.song_ids[appearance["song"]["id"]] = song_title
+                returnAlbum.song_urls.append(appearance["song"]["url"])
+    
             for feat in appearance["song"]["featured_artists"]:
                 if feat["is_verified"]:
                     if(feat["id"] not in returnAlbum.features["verified"]):
@@ -92,10 +95,10 @@ def scrape_album(url,lyric_map):
 
     album_results = {}
     # Get all song urls to scrape from the respective album page
-    song_pages = inner_html.findAll('a', {"class": 'u-display_block'}, href=True)
-    song_urls = [s["href"] for s in song_pages]
+    # song_pages = inner_html.findAll('a', {"class": 'u-display_block'}, href=True)
+    # song_urls = [s["href"] for s in song_pages]
 
-    for song in song_urls:
+    for song in returnAlbum.song_urls:
 
         # Display the song url being scraped
         song_result = scrape_song(song)

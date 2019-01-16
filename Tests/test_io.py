@@ -43,12 +43,7 @@ album_test = {
             "Kendrick-lamar-you-aint-gotta-lie-momma-said-lyrics",
             "Kendrick-lamar-i-album-version-lyrics",
             "Kendrick-lamar-mortal-man-lyrics",
-            "Kendrick-lamar-to-pimp-a-butterfly-credits-lyrics",
             "Kendrick-lamar-alright-music-video-lyrics",
-            "Screen-genius-god-is-gangsta-short-film-annotated",
-            "Kendrick-lamar-to-pimp-a-butterfly-booklet-annotated",
-            "Genius-an-exegetical-study-of-to-pimp-a-butterfly-annotated",
-            "Kendrick-lamar-to-pimp-a-butterfly-tracklist-album-art-annotated",
             "Kendrick-lamar-i-single-version-lyrics"
         ],
         [
@@ -64,9 +59,7 @@ album_test = {
             "Kendrick-lamar-swimming-pools-drank-lyrics",
             "Kendrick-lamar-sing-about-me-im-dying-of-thirst-lyrics",
             "Kendrick-lamar-real-lyrics",
-            "Kendrick-lamar-compton-lyrics",
-            "Kendrick-lamar-good-kid-maad-city-credits-annotated",
-            "Kendrick-lamar-good-kid-maad-city-booklet-annotated"
+            "Kendrick-lamar-compton-lyrics"
         ],
         [
             "Logic-intro-lyrics",
@@ -83,9 +76,7 @@ album_test = {
             "Logic-till-the-end-lyrics",
             "Logic-driving-ms-daisy-lyrics",
             "Logic-now-lyrics",
-            "Logic-alright-lyrics",
-            "Logic-under-pressure-credits-lyrics",
-            "Logic-under-pressure-album-cover-and-tracklist-annotated"
+            "Logic-alright-lyrics"
         ],
         [
             "Logic-contact-lyrics",
@@ -105,9 +96,7 @@ album_test = {
             "Logic-never-been-lyrics",
             "Logic-run-it-lyrics",
             "Logic-lucidity-scene-lyrics",
-            "Logic-the-incredible-true-story-lyrics",
-            "Logic-the-incredible-true-story-tracklist-album-cover-annotated",
-            "Logic-the-incredible-true-story-credits-lyrics"
+            "Logic-the-incredible-true-story-lyrics"
         ]
     ],
     "albumfeatures_output": [
@@ -118,23 +107,17 @@ album_test = {
          'unverified': {130: 'Drake', 123: u'Dr.\xa0Dre', 4637: 'MC Eiht', 2434: 'Anna Wise'}},
         {'verified': {1745: 'Childish Gambino', 492: 'Big Sean'},
          'unverified': {}},
-        {'verified': {569307: 'Big Lenbo', 12636: 'Jesse Boykins III', 71478:
-        'Lucy Rose'},
+        {'verified': {569307: 'Big Lenbo', 12636: 'Jesse Boykins III', 71478: 'Lucy Rose'},
          'unverified': {213416: 'Dria'}}
     ],
     "songids_output": [
         {
-            721286: 'To Pimp a Butterfly [Tracklist + Album Art]',
-            726154: 'An Exegetical Study of "To Pimp a Butterfly"', 
             721842: 'u',
-            2399538: 'God Is Gangsta - Short Film',
             523961: 'i (Album Version)',
             701372: 'The Blacker the Berry',
             721854: 'Mortal Man',
-            2431818: 'To Pimp a Butterfly [Booklet]',
             2162382: 'Alright (Music Video)',
             724687: 'i (Single Version)',
-            724689: 'To Pimp a Butterfly [Credits]',
             722263: "Wesley's Theory",
             722264: 'For Free? (Interlude)',
             722270: 'Institutionalized',
@@ -149,13 +132,12 @@ album_test = {
             721659: 'King Kunta'
         },
         {
-            79008: 'The Art of Peer Pressure', 90471: 'Compton', 81159: 'Swimming Pools (Drank)', 90472: "Sherane a.k.a Master Splinter's Daughter", 90473: "Bitch, Don't Kill My Vibe", 90475: 'Money Trees', 4198624: 'Money Trees (OG)', 90477: 'good kid', 90478: 'm.A.A.d city', 90479: "Sing About Me, I'm Dying of Thirst", 90480: 'Real', 92853: 'Backseat Freestyle', 207318: 'good kid, m.A.A.d city [Credits]', 92856: 'Poetic Justice', 2432122: 'good kid, m.A.A.d city [Booklet]'},
+            79008: 'The Art of Peer Pressure', 90471: 'Compton', 81159: 'Swimming Pools (Drank)', 90472: "Sherane a.k.a Master Splinter's Daughter", 90473: "Bitch, Don't Kill My Vibe", 90475: 'Money Trees', 4198624: 'Money Trees (OG)', 90477: 'good kid', 90478: 'm.A.A.d city', 90479: "Sing About Me, I'm Dying of Thirst", 90480: 'Real', 92853: 'Backseat Freestyle', 92856: 'Poetic Justice'},
         {
-            528258: 'Till the End', 528260: 'Metropolis', 197351: 'Alright', 523560: 'Gang Related', 526729: "I'm Gone", 528266: 'Soul Food', 544491: 'Nikki', 516317: 'Under Pressure - Album Cover and Tracklist', 398797: 'Now', 528271: 'Buried Alive', 528304: 'Growing Pains III', 528306: 'Never Enough', 528275: 'Bounce', 519316: 'Under Pressure', 528311: 'Intro', 506780: 'Driving Ms. Daisy', 624498: 'Under Pressure [Credits]'},
+            528258: 'Till the End', 528260: 'Metropolis', 197351: 'Alright', 523560: 'Gang Related', 526729: "I'm Gone", 528266: 'Soul Food', 544491: 'Nikki', 398797: 'Now', 528271: 'Buried Alive', 528304: 'Growing Pains III', 528306: 'Never Enough', 528275: 'Bounce', 519316: 'Under Pressure', 528311: 'Intro', 506780: 'Driving Ms. Daisy'},
         {
             2312800: "Young Jesus",
             2338721: "I Am the Greatest",
-            2313673: "The Incredible True Story [Tracklist + Album Cover]",
             2338720: "Lord Willin'",
             2343638: "Lucidity (Scene)",
             2327079: "Like Woah",
@@ -171,8 +153,7 @@ album_test = {
             2343414: "Contact",
             2343415: "Fade Away",
             2343416: "Upgrade",
-            2343417: "White People (Scene)",
-            2374047: "The Incredible True Story [Credits]",
+            2343417: "White People (Scene)"
         }
     ]
 }
