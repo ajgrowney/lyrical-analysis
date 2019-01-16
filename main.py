@@ -10,13 +10,13 @@ import time
 import requests
 import concurrent.futures
 import matplotlib.pyplot as plt
-from constants import constants
+from Components.constants import constants
 from multiprocessing.pool import ThreadPool as Pool
 from bs4 import BeautifulSoup
 from Components.node import NodeInterface, ArtistNode, LyricNode
 from Components.graph import GraphObj
 from Components.objects import AlbumObject, SongObject
-from Data.artist_setup import artists_data
+from Components.artist_setup import artists_data
 
 genius_api_call = {
     'token': constants["apikey"],
@@ -250,44 +250,7 @@ def getArtistIdRange(range_start,range_end,filename):
     json.dump({"errors": errors}, open(err_path, "w"))
     return errors
 
-# Param: lyric_map { GraphObj } - Graph object that holds node map to traverse
-# Return: Nothing - returns when user requests to exit
-def menuNavigation(lyric_map):
-    menuChoice = 0
-    menu = "1: View Artist Details\n2: View Word Details\n3: Exit\n "
-    while(menuChoice != 3):
-        print(menu)
-        menuChoice = raw_input("Please Select: ")
-        if menuChoice == '1':
-            i=1
-            selection = {}
-            for name in lyric_map.artist_choices:
-                selection[str(i)] = name
-                print(i,name)
-                i += 1
-            choice = raw_input("Select an artist: ")
-            artist = selection[choice]
-            if artist in lyric_map.artist_choices:
-                artist_id = lyric_map.artist_choices[artist]
-                print lyric_map.node_map[artist_id].printDetails()
-            else:
-                print("Artist ID not found")
-        elif menuChoice == '2':
-            word = raw_input("Type a word to search: ")
-            if word in lyric_map.node_map:
-                print lyric_map.node_map[word].song_references
-                print lyric_map.node_map[word].timeline
-                #refs = lyric_map.node_map[word].song_references
-                #chart = plt.bar(list(lyric_map.node_map[word].timeline.keys()), lyric_map.node_map[word].timeline.values(), color='g')
-                #for rect, year in zip(chart, refs.keys()):
-                #    height = rect.get_height()
-                #    plt.text(rect.get_x() + rect.get_width()/2.0, height, ("\n".join((x[1] for x in (refs[year])))), ha='center', va='bottom')
-                #plt.legend()
-                #plt.show()
-            else:
-                print("Word not found. Try again")
-        elif menuChoice == '3':
-            return
+
 
 # Description: Supports two main calls as of now:
 # Song Search Analysis: takes in a song and artist, prints out top fifteen most used lyrics with option to exclude certain words
@@ -308,42 +271,10 @@ def main():
     # In Progress: Main Functionality
     if arg_len == 2 and user_input[1] == 'artistMapInitial':
         lyrical_map = GraphObj()
-
         art_list = [artists_data["pusha"],artists_data["chance"],artists_data["meek"],artists_data["kendrick"],artists_data["joey"]]
         for artist in art_list:
-
-            # Add Search Capabilities for artist to graph object
-            lyrical_map.artist_choices[artist["name"]] = artist["id"]
-
-            # Create new artist node
-            new_art = ArtistNode(artist["name"],artist["id"])
-            album_urls = artist["album_paths"]
-            new_art.album_urls = album_urls
-            suggested_albums = {}
-            for album in new_art.album_urls:
-                single_album,lyrical_map = scrape_album("https://genius.com/albums/"+new_art.album_search_str+'/'+album,lyrical_map)
-                
-                # Add other albums found to suggested searches for an artist
-                for alb in (single_album.other_albums): 
-                    suggested_albums.update(alb)
-                # Add the release year of the album to artist's release years
-                new_art.album_release_years[single_album.title] = single_album.release_year # Add the album year to the artist's node
-                
-                # Accumulate the albums lyrics to add to edges to artist's node
-                for key,val in single_album.lyric_results.iteritems():
-                    artist_connections = new_art.adj_list
-                    cur_lyric = lyrical_map.node_map[key]
-                    if cur_lyric in artist_connections:
-                        artist_connections[cur_lyric] += val
-                    else:
-                        artist_connections[cur_lyric] = val
-
-            for t,u in suggested_albums.iteritems():
-                u = u.replace(new_art.album_search_str+"/",'')
-                if u not in new_art.album_urls:
-                    new_art.album_suggested[u] = t
-            lyrical_map.node_map[artist["id"]] = new_art
-        menuNavigation(lyrical_map) 
+            lyrical_map.addNewArtist(artist)
+        lyrical_map.mainMenuNav() 
    
    # Testing Suite
     elif arg_len == 2 and user_input[1] == 'runTests':
