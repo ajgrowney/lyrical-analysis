@@ -13,6 +13,12 @@ class AlbumObject:
         self.song_ids = {}
         self.song_urls = []
 
+    def addLyricResult(self,lyric,freq):
+        if lyric in self.lyric_results:
+            self.lyric_results[lyric] += freq
+        else:
+            self.lyric_results[lyric] = freq
+
 class SongObject:
     def __init__(self):
         self.lyrics = ""

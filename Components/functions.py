@@ -52,7 +52,7 @@ def scrape_song(url):
 
 # Param: url { String } - album url to be scraped for song urls and then processed
 # Param: lyric_map { GraphObj } - graph containing current lyric and artist nodes
-# Return: { AlbumObject, GraphObj } - Album Object containing all the album's data and lyric results, Updated Graph Object
+# Return: { AlbumObject } - Album Object containing all the album's data and lyric results, Updated Graph Object
 def scrape_album(url,lyric_map):
     returnAlbum = AlbumObject()
     html_page = requests.get(url)
@@ -86,14 +86,16 @@ def scrape_album(url,lyric_map):
                 else:
                     if(feat["id"] not in returnAlbum.features["unverified"]):
                         returnAlbum.features["unverified"][feat["id"]] = feat["name"]
-        returnAlbum.release_year = data["album"]["release_date_components"]["year"]
+        try:
+            returnAlbum.release_year = data["album"]["release_date_components"]["year"]
+        except TypeError:
+            returnAlbum.release_year = -1
         returnAlbum.title = data["album"]["name"]
         returnAlbum.id = data["album"]["id"]
     
     except UnicodeEncodeError as e:
         print "Error",e
 
-    album_results = {}
     # Get all song urls to scrape from the respective album page
     # song_pages = inner_html.findAll('a', {"class": 'u-display_block'}, href=True)
     # song_urls = [s["href"] for s in song_pages]
@@ -123,18 +125,8 @@ def scrape_album(url,lyric_map):
                 lyric_map.node_map[res_key] = newLyric
             
             # Adding lyric to individual album results
-            if res_key in album_results:
-                album_results[res_key] += res_val
-            else:
-                album_results[res_key] = res_val
+            returnAlbum.addLyricResult(res_key,res_val)
 
-    returnAlbum.lyric_results = album_results
-
-    # Can be returned instead of album_results if you want a sorted array of lyrics from the album
-    # sorted_album_results = []
-    # for key, value in sorted(album_results.iteritems(), key=lambda (k,v): (v,k)):
-    #     sorted_album_results.append((key,value))
-
-    return returnAlbum, lyric_map
+    return returnAlbum
 
 

@@ -129,7 +129,7 @@ def main():
         lyrical_map = GraphObj()
         art_list = [artists_data["pusha"],artists_data["chance"],artists_data["meek"],artists_data["kendrick"],artists_data["joey"]]
         for artist in art_list:
-            lyrical_map.addNewArtist(artist)
+            lyrical_map.addToArtist(artist,True)
         lyrical_map.mainMenuNav() 
    
    # Testing Suite

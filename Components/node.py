@@ -1,4 +1,4 @@
-
+import operator
 class NodeInterface:
     def __init__(self):
         print "Creating generic node"
@@ -14,31 +14,51 @@ class ArtistNode(NodeInterface):
         self.album_suggested = {}
         self.album_release_years = {}
         print "Creating artist node:",self.name, self.id
-        print self.album_search_str
     
     def printDetails(self):
-        print "Name:",self.name
-        print "ID:",self.id
-        num_lyrics = 0
-        total_word_length = 0
-        unique_lyrics = 0 
-        for key,val in self.adj_list.iteritems():
-            num_lyrics += val
-            total_word_length += len(key.lyric)*val
-            unique_lyrics += 1
-        print "Number of lyrics searched:",num_lyrics
-        print "Number of unique lyrics:", unique_lyrics
-        print "Unique Lyric Ratio:", str(unique_lyrics/float(num_lyrics))
-        print "Average lyric length:", str(total_word_length/float(num_lyrics))
-        print "Album urls searched:",self.album_urls
-        print "Albums suggested to search:",self.album_suggested
-        print "Years with albums released:",self.album_release_years
+        menu = "\nMenu: "+self.name
+        menu += "\n1: Artist Personal Info\n2: Lyrical Statistics\n3: Scrape More of Artist's Discography\n4: Exit"
+        menuChoice = 0
+        while menuChoice != 4:
+            print(menu)
+            menuChoice = raw_input("Make Selection: ")
+            if menuChoice == '1':
+                print "Name:",self.name
+                print "ID:",self.id
+            elif menuChoice == '2':
+                # Artist's Lyric Statistics
+                num_lyrics = 0
+                total_word_length = 0
+                unique_lyrics = 0 
+                for key,val in self.adj_list.iteritems():
+                    num_lyrics += val
+                    total_word_length += len(key.lyric)*val
+                    unique_lyrics += 1
+                print "Number of lyrics searched:",num_lyrics
+                print "Number of unique lyrics:", unique_lyrics
+                print "Unique Lyric Ratio:", str(unique_lyrics/float(num_lyrics))
+                print "Average lyric length:", str(total_word_length/float(num_lyrics))
+                print "Years with albums released:",self.album_release_years
+                print "Album urls searched:",self.album_urls
+            elif menuChoice == '3':
+                print "Albums suggested to search:",self.album_suggested.values()
+                searchAll = raw_input("Search all suggested albums (y/N): ")
+                if searchAll == 'y':
+                    searchAlbumUrls = self.album_suggested.keys()
+                    return searchAlbumUrls
+            elif menuChoice == '4':
+                return None
+
+
 
     def addAlbumUrl(self,url):
         self.album_urls.append(url)
 
-    def addConnection(self, key, val):
-        self.adj_list[key] = val
+    def addLyricConnection(self, lyric, val):
+        if lyric in self.adj_list:
+            self.adj_list[lyric] += val
+        else:
+            self.adj_list[lyric] = val
 
 class LyricNode(NodeInterface):
     def __init__(self, word):
@@ -53,8 +73,17 @@ class LyricNode(NodeInterface):
         # Key: Year
         # Value: Song ID
         self.song_references = {}
-    def addConnection(self, key, val):
-        self.adj_list[key] = val
+
+    def topArtistConnections(self):
+        print len(self.adj_list)
+        sorted_artists = sorted(self.adj_list.items(), key = operator.itemgetter(1), reverse = True)
+        return_artists = [(art.name,freq) for art,freq in sorted_artists[:3]]
+        return return_artists
+    def addArtistConnection(self, artist, val):
+        if artist in self.adj_list:
+            self.adj_list[artist] += val
+        else:
+            self.adj_list[artist] = val
 
     def addLyricTimeline(self, release_year, lyric_count):
         if release_year in self.timeline:
