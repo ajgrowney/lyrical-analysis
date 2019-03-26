@@ -16,7 +16,7 @@ Album Features <br />
 Album Song ID's <br />
 
 ## Artist Map Initial
-Description: This will be the main function that will be used to assemble the graph as a whole. As of now, I am adding features to continue building off the data structure in use
+Description: This will be the main function that will be used to assemble the graph as a whole. As of now, I am adding features to continue building off the data structure in use <br />
 Command Line: python main.py artistMapInitial
 
 ## Artist Id Scraping
