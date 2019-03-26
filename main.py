@@ -16,6 +16,7 @@ from Components.node import NodeInterface, ArtistNode, LyricNode
 from Components.graph import GraphObj
 from Components.objects import AlbumObject, SongObject
 from Components.artist_setup import artists_data
+from Components.functions import scrape_song
 
 genius_api_call = {
     'token': constants["apikey"],
@@ -132,6 +133,8 @@ def main():
             lyrical_map.addToArtist(artist,True)
         lyrical_map.mainMenuNav() 
    
+    elif arg_len == 2 and user_input[1] == "nlp":
+       print(scrape_song("https://genius.com/Logic-america-lyrics").lyrics) 
    # Testing Suite
     elif arg_len == 2 and user_input[1] == 'runTests':
         print("Testing has moved. To run tests: 'python Tests/test_basic.py'")

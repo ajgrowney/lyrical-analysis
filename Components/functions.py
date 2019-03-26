@@ -1,11 +1,11 @@
 import json
 import operator
 import requests
-from constants import constants
+from .constants import constants
 from bs4 import BeautifulSoup
-from node import NodeInterface, ArtistNode, LyricNode
-from objects import AlbumObject, SongObject
-from artist_setup import artists_data
+from .node import NodeInterface, ArtistNode, LyricNode
+from .objects import AlbumObject, SongObject
+from .artist_setup import artists_data
 
 # Param: song_lyrics { String } - string with all the song lyrics
 # Result: { Dictionary } - sorted dictionary containing a song with count per unique word
@@ -94,7 +94,7 @@ def scrape_album(url,lyric_map):
         returnAlbum.id = data["album"]["id"]
     
     except UnicodeEncodeError as e:
-        print "Error",e
+        print("Error",e)
 
     # Get all song urls to scrape from the respective album page
     # song_pages = inner_html.findAll('a', {"class": 'u-display_block'}, href=True)

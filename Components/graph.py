@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-from node import ArtistNode
-from functions import scrape_song, scrape_album
+from .node import ArtistNode
+from .functions import scrape_song, scrape_album
 
 class GraphObj:
     def __init__(self):
@@ -38,16 +38,16 @@ class GraphObj:
             elif menuChoice == '2':
                 word = raw_input("Type a word to search: ")
                 if word in self.node_map:
-                    print self.node_map[word].topArtistConnections()
-                    print self.node_map[word].song_references
-                    print self.node_map[word].timeline
-                    refs = self.node_map[word].song_references
-                    chart = plt.bar(list(self.node_map[word].timeline.keys()), self.node_map[word].timeline.values(), color='g')
-                    for rect, year in zip(chart, refs.keys()):
-                        height = rect.get_height()
-                        plt.text(rect.get_x() + rect.get_width()/2.0, height, ("\n".join((x[1] for x in (refs[year])))), ha='center', va='bottom')
-                    plt.legend()
-                    plt.show()
+                    print(self.node_map[word].topArtistConnections())
+                    print(self.node_map[word].song_references)
+                    print(self.node_map[word].timeline)
+#                    refs = self.node_map[word].song_references
+#                    chart = plt.bar(list(self.node_map[word].timeline.keys()), self.node_map[word].timeline.values(), color='g')
+#                    for rect, year in zip(chart, refs.keys()):
+#                        height = rect.get_height()
+#                        plt.text(rect.get_x() + rect.get_width()/2.0, height, ("\n".join((x[1] for x in (refs[year])))), ha='center', va='bottom')
+#                    plt.legend()
+#                    plt.show()
                 else:
                     print("Word not found. Try again")
             elif menuChoice == '3':
