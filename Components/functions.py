@@ -42,7 +42,7 @@ def scrape_song(url):
     lyrics = inner_html.find('div', class_='lyrics').get_text()
     # Get the song ID
     metadata = inner_html.find("meta", itemprop="page_data")
-    data = json.loads(metadata["content"].encode('utf-8'))
+    data = json.loads(metadata["content"].encode('utf-8').decode('utf-8'))
     song_id = data["song"]["id"]
     song_title = data["song"]["title"].encode('ascii','ignore').decode('utf-8')
     returnSong.lyrics = lyrics
@@ -62,7 +62,7 @@ def scrape_album(url,lyric_map):
     try:
         # Scrape Album Metadata
         metadata = inner_html.find("meta", itemprop="page_data")
-        data = json.loads(metadata["content"].encode('utf-8'))
+        data = json.loads((metadata["content"].encode('utf-8').decode('utf-8')))
         
         # Get other albums as suggestions to search
         for album in data["other_albums_by_artist"]:

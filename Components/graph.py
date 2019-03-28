@@ -16,7 +16,7 @@ class GraphObj:
         menu = "\nMenu: Main Menu \n1: View Artist Details\n2: View Word Details\n3: Exit\n "
         while(menuChoice != 3):
             print(menu)
-            menuChoice = raw_input("Please Select: ")
+            menuChoice = input("Please Select: ")
             if menuChoice == '1':
                 i=1
                 selection = {}
@@ -24,7 +24,7 @@ class GraphObj:
                     selection[str(i)] = name
                     print(i,name)
                     i += 1
-                choice = raw_input("Select an artist: ")
+                choice = input("Select an artist: ")
                 artist = selection[choice]
                 if artist in self.artist_choices:
                     artist_id = self.artist_choices[artist]
@@ -36,7 +36,7 @@ class GraphObj:
                 else:
                     print("Artist ID not found")
             elif menuChoice == '2':
-                word = raw_input("Type a word to search: ")
+                word = input("Type a word to search: ")
                 if word in self.node_map:
                     print(self.node_map[word].topArtistConnections())
                     print(self.node_map[word].song_references)
@@ -79,13 +79,13 @@ class GraphObj:
             # Add the release year of the album to artist's release years
             artNode.album_release_years[single_album.title] = single_album.release_year
             # Accumulate the albums lyrics to add to edges to artist's node
-            for key,val in single_album.lyric_results.iteritems():
+            for key,val in single_album.lyric_results.items():
                 cur_lyric = self.node_map[key]
                 artNode.addLyricConnection(cur_lyric,val)
                 cur_lyric.addArtistConnection(artNode,val)
 
             # Append suggested albums to artist node for further scraping
-        for sug_title,sug_url in suggested_albums.iteritems():
+        for sug_title,sug_url in suggested_albums.items():
             # Remove the artists part of the string to normalize with
             # other entries
             sug_url = sug_url.encode('ascii','ignore').decode('utf-8')

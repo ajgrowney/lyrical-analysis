@@ -21,7 +21,7 @@ class ArtistNode(NodeInterface):
         menuChoice = 0
         while menuChoice != 4:
             print(menu)
-            menuChoice = raw_input("Make Selection: ")
+            menuChoice = input("Make Selection: ")
             if menuChoice == '1':
                 print("Name:",self.name)
                 print("ID:",self.id)
@@ -30,7 +30,7 @@ class ArtistNode(NodeInterface):
                 num_lyrics = 0
                 total_word_length = 0
                 unique_lyrics = 0 
-                for key,val in self.adj_list.iteritems():
+                for key,val in self.adj_list.items():
                     num_lyrics += val
                     total_word_length += len(key.lyric)*val
                     unique_lyrics += 1
@@ -42,7 +42,7 @@ class ArtistNode(NodeInterface):
                 print("Album urls searched:",self.album_urls)
             elif menuChoice == '3':
                 print("Albums suggested to search:",self.album_suggested.values())
-                searchAll = raw_input("Search all suggested albums (y/N): ")
+                searchAll = input("Search all suggested albums (y/N): ")
                 if searchAll == 'y':
                     searchAlbumUrls = self.album_suggested.keys()
                     return searchAlbumUrls
