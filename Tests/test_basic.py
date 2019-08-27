@@ -18,7 +18,7 @@ def test_song_id(url):
     [element.extract() for element in inner_html('script')]
     # Get the song ID
     metadata = inner_html.find("meta", itemprop="page_data")
-    data = json.loads(metadata["content"].encode('utf-8'))
+    data = json.loads(metadata["content"])
     song_id = data["song"]["id"]
     return song_id 
     
@@ -32,7 +32,7 @@ def test_album_data(url):
     [element.extract() for element in inner_html('script')]
     metadata = inner_html.find("meta", itemprop="page_data")
     try:
-        data = json.loads(metadata["content"].encode('utf-8'))
+        data = json.loads(metadata["content"])
         appearances = data["album_appearances"]
         
         # Strip album features and song id with titles
@@ -40,7 +40,7 @@ def test_album_data(url):
         album_song_id = {}
         album_song_urls = []
         for ap in appearances:
-            s = ap["song"]["title"].encode('ascii','ignore').decode('utf-8')
+            s = ap["song"]["title"]
             if (not s.endswith(constants["song_title_ignore"])) and (not ap["song"]["url"].endswith("-annotated")):
                 album_song_id[ap["song"]["id"]] = s
                 album_song_urls.append(ap["song"]["url"])
@@ -60,7 +60,7 @@ def test_album_data(url):
         album_id = data["album"]["id"]
         return album_name, release_year, album_id, album_features, album_song_id, album_song_urls
     except UnicodeEncodeError as e:
-        print "Error",e
+        print ("Error",e)
 
 # Description: For testing purposes because snippet used in scrape_album
 # Param url { String } - album url to be scraped for song urls
@@ -115,11 +115,12 @@ def runTests(json_input, context):
         returned_title = test_output[i].returned_title
         returned_year = test_output[i].returned_year
         returned_album_id = test_output[i].returned_album_id
-        if(returned_title == meta_expected[i]["title"] and returned_year == meta_expected[i]["year"] and returned_album_id == meta_expected[i]["id"]):
+
+        if((meta_expected[i]["title"] == returned_title) and (meta_expected[i]["year"] == returned_year) and (returned_album_id == meta_expected[i]["id"])):
             print("Test Success: " + meta_expected[i]["title"])
             successful_tests += 1
         else:
-            print("Test Failed: " + meta_expected[i]["title"]+ str(meta_expected[i]["year"]) + " vs " + returned_title + " " + str(returned_year))
+            print("Test Failed: " + meta_expected[i]["title"]+ str(meta_expected[i]["id"])+ " " + str(meta_expected[i]["year"])+ " vs " + returned_title + " "+ str(returned_year)+" " + str(returned_album_id))
             failed_tests += 1
     
     # Testing Scrape Album's Song URL results

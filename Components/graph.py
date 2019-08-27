@@ -14,6 +14,7 @@ class GraphObj:
     def mainMenuNav(self):
         menuChoice = 0
         menu = "\nMenu: Main Menu \n1: View Artist Details\n2: View Word Details\n3: Exit\n "
+
         while(menuChoice != 3):
             print(menu)
             menuChoice = input("Please Select: ")
@@ -24,6 +25,7 @@ class GraphObj:
                     selection[str(i)] = name
                     print(i,name)
                     i += 1
+                
                 choice = input("Select an artist: ")
                 artist = selection[choice]
                 if artist in self.artist_choices:
@@ -86,11 +88,7 @@ class GraphObj:
 
             # Append suggested albums to artist node for further scraping
         for sug_title,sug_url in suggested_albums.items():
-            # Remove the artists part of the string to normalize with
-            # other entries
-            sug_url = sug_url.encode('ascii','ignore').decode('utf-8')
-            sug_title = sug_title.encode('ascii','ignore').decode('utf-8')
-            
+            # Remove the artists part of the string to normalize with other entries
             sug_url = sug_url.replace(artNode.album_search_str+"/",'')
             if sug_url not in artNode.album_urls:
                 artNode.album_suggested[sug_url] = sug_title

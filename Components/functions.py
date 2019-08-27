@@ -15,7 +15,7 @@ def lyric_analysis(song_lyrics):
     [lyric.lower() for lyric in lyric_list]
     my_dict = {}
     for item in lyric_list:
-        item = item.encode('ascii','ignore').decode('utf-8')
+
         if item in my_dict and (item not in constants["ignore"]):
             my_dict[item] += 1
         else:
@@ -40,11 +40,12 @@ def scrape_song(url):
     [element.extract() for element in inner_html('script')]
     # Get Lyrics from the song
     lyrics = inner_html.find('div', class_='lyrics').get_text()
-    # Get the song ID
+
+    # Get the song ID and Title
     metadata = inner_html.find("meta", itemprop="page_data")
-    data = json.loads(metadata["content"].encode('utf-8').decode('utf-8'))
+    data = json.loads(metadata["content"])
     song_id = data["song"]["id"]
-    song_title = data["song"]["title"].encode('ascii','ignore').decode('utf-8')
+    song_title = data["song"]["title"]
     returnSong.lyrics = lyrics
     returnSong.id = song_id
     returnSong.title = song_title
@@ -62,7 +63,7 @@ def scrape_album(url,lyric_map):
     try:
         # Scrape Album Metadata
         metadata = inner_html.find("meta", itemprop="page_data")
-        data = json.loads((metadata["content"].encode('utf-8').decode('utf-8')))
+        data = json.loads(metadata["content"])
         
         # Get other albums as suggestions to search
         for album in data["other_albums_by_artist"]:
@@ -72,8 +73,7 @@ def scrape_album(url,lyric_map):
         
         # Add album features to the album object returned
         for appearance in data["album_appearances"]:
-            song_title = appearance["song"]["title"].encode('ascii','ignore').decode('utf-8')
-            
+            song_title = appearance["song"]["title"]
             # Remove all songs that are Genius Annotation Tracks and Booklet, Covers, etc. to scrape only the real songs
             if (not song_title.endswith(constants["song_title_ignore"])) and (not appearance["song"]["url"].endswith("-annotated")): 
                 returnAlbum.song_ids[appearance["song"]["id"]] = song_title

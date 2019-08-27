@@ -16,13 +16,13 @@ album_test = {
     "input": [
         "Kendrick-lamar/To-pimp-a-butterfly",
         "Kendrick-lamar/Good-kid-m-a-a-d-city",
-        "Logic/Under-pressure",
+        "Logic/Under-pressure-deluxe-version",
         "Logic/The-incredible-true-story",
     ],
     "metadata_output": [
         {"title": "To Pimp a Butterfly", "year": 2015, "id": 120991},
         {"title": "good kid, m.A.A.d city", "year": 2012, "id": 15946},
-        {"title": "Under Pressure", "year": 2014, "id": 112067},
+        {"title": "Under Pressure (Deluxe Version)", "year": 2014, "id": 500844},
         {"title": "The Incredible True Story", "year": 2015, "id": 130526},
     ],
     "songurl_output": [
@@ -42,9 +42,7 @@ album_test = {
             "Kendrick-lamar-the-blacker-the-berry-lyrics",
             "Kendrick-lamar-you-aint-gotta-lie-momma-said-lyrics",
             "Kendrick-lamar-i-album-version-lyrics",
-            "Kendrick-lamar-mortal-man-lyrics",
-            "Kendrick-lamar-alright-music-video-lyrics",
-            "Kendrick-lamar-i-single-version-lyrics"
+            "Kendrick-lamar-mortal-man-lyrics"
         ],
         [
             "Kendrick-lamar-sherane-aka-master-splinters-daughter-lyrics",
@@ -52,7 +50,6 @@ album_test = {
             "Kendrick-lamar-backseat-freestyle-lyrics",
             "Kendrick-lamar-the-art-of-peer-pressure-lyrics",
             "Kendrick-lamar-money-trees-lyrics",
-            "Kendrick-lamar-money-trees-og-lyrics",
             "Kendrick-lamar-poetic-justice-lyrics",
             "Kendrick-lamar-good-kid-lyrics",
             "Kendrick-lamar-maad-city-lyrics",
@@ -101,10 +98,10 @@ album_test = {
     ],
     "albumfeatures_output": [
         {'verified': {14148: 'Rapsody', 17649: 'James Fauntleroy', 2668: 'Ronald Isley', 1421: 'Kendrick Lamar',
-                      46: 'Snoop Dogg', 177: 'Bilal', 351: 'George Clinton'},
-         'unverified': {14481: 'Thundercat', 2434: 'Anna Wise'}},
-        {'verified': {1403: 'Jay Rock'},
-         'unverified': {130: 'Drake', 123: u'Dr.\xa0Dre', 4637: 'MC Eiht', 2434: 'Anna Wise'}},
+                      46: 'Snoop Dogg', 177: 'Bilal', 351: 'George Clinton', 2434: 'Anna Wise'},
+         'unverified': {14481: 'Thundercat'}},
+        {'verified': {1403: 'Jay Rock', 2434: 'Anna Wise'},
+         'unverified': {130: 'Drake', 123: u'Dr.\xa0Dre', 4637: 'MC Eiht'}},
         {'verified': {1745: 'Childish Gambino', 492: 'Big Sean'},
          'unverified': {}},
         {'verified': {569307: 'Big Lenbo', 12636: 'Jesse Boykins III', 71478: 'Lucy Rose'},
