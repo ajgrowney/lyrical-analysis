@@ -40,6 +40,7 @@ if("verified_artists_path" in constants):
 def main():
     arg_len = len(sys.argv)
     user_input = sys.argv
+    
     if arg_len == 3 and user_input[1] == 'findArtistId':
         url = genius_api_call['base']
         params = {'q': user_input[2]}
@@ -60,10 +61,6 @@ def main():
    
     elif arg_len == 2 and user_input[1] == "nlp":
        print(scrape_song("https://genius.com/Logic-run-it-lyrics").lyrics)
-    
-   # Testing Suite
-    elif arg_len == 2 and user_input[1] == 'runTests':
-        print("Testing has moved. To run tests: 'python Tests/test_basic.py'")
     
     # Must be improved or deleted
     elif arg_len == 5 and user_input[1] == 'artistId':

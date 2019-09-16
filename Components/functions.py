@@ -34,10 +34,10 @@ def lyric_analysis(song_lyrics):
 # Param: url { String } - url of a song to scrape the lyrics from
 # Return: string that holds all the lyrics text
 def scrape_song(url):
-    returnSong = SongObject()
     html_page = requests.get(url)
     inner_html = BeautifulSoup(html_page.text, 'html.parser') 
     [element.extract() for element in inner_html('script')]
+
     # Get Lyrics from the song
     lyrics = inner_html.find('div', class_='lyrics').get_text()
 
@@ -46,9 +46,9 @@ def scrape_song(url):
     data = json.loads(metadata["content"])
     song_id = data["song"]["id"]
     song_title = data["song"]["title"]
-    returnSong.lyrics = lyrics
-    returnSong.id = song_id
-    returnSong.title = song_title
+
+    returnSong = SongObject(song_id,url,song_title,lyrics)
+
     return returnSong
 
 # Param: url { String } - album url to be scraped for song urls and then processed

@@ -97,7 +97,7 @@ album_test = {
         ]
     ],
     "albumfeatures_output": [
-        {'verified': {14148: 'Rapsody', 17649: 'James Fauntleroy', 2668: 'Ronald Isley', 1421: 'Kendrick Lamar',
+        {'verified': {14148: 'Rapsody', 17649: 'James Fauntleroy', 2668: 'Ronald Isley',
                       46: 'Snoop Dogg', 177: 'Bilal', 351: 'George Clinton', 2434: 'Anna Wise'},
          'unverified': {14481: 'Thundercat'}},
         {'verified': {1403: 'Jay Rock', 2434: 'Anna Wise'},
@@ -115,7 +115,7 @@ album_test = {
             721854: 'Mortal Man',
             2162382: 'Alright (Music Video)',
             724687: 'i (Single Version)',
-            722263: "Wesley's Theory",
+            722263: "Wesley’s Theory",
             722264: 'For Free? (Interlude)',
             722270: 'Institutionalized',
             722271: 'These Walls',
@@ -129,13 +129,13 @@ album_test = {
             721659: 'King Kunta'
         },
         {
-            79008: 'The Art of Peer Pressure', 90471: 'Compton', 81159: 'Swimming Pools (Drank)', 90472: "Sherane a.k.a Master Splinter's Daughter", 90473: "Bitch, Don't Kill My Vibe", 90475: 'Money Trees', 4198624: 'Money Trees (OG)', 90477: 'good kid', 90478: 'm.A.A.d city', 90479: "Sing About Me, I'm Dying of Thirst", 90480: 'Real', 92853: 'Backseat Freestyle', 92856: 'Poetic Justice'},
+            79008: 'The Art of Peer Pressure', 90471: 'Compton', 81159: 'Swimming Pools (Drank)', 90472: "Sherane a.k.a Master Splinter's Daughter", 90473: "Bitch, Don't Kill My Vibe", 90475: 'Money Trees', 90477: 'good kid', 90478: 'm.A.A.d city', 90479: "Sing About Me, I'm Dying of Thirst", 90480: 'Real', 92853: 'Backseat Freestyle', 92856: 'Poetic Justice'},
         {
-            528258: 'Till the End', 528260: 'Metropolis', 197351: 'Alright', 523560: 'Gang Related', 526729: "I'm Gone", 528266: 'Soul Food', 544491: 'Nikki', 398797: 'Now', 528271: 'Buried Alive', 528304: 'Growing Pains III', 528306: 'Never Enough', 528275: 'Bounce', 519316: 'Under Pressure', 528311: 'Intro', 506780: 'Driving Ms. Daisy'},
+            528258: 'Till the End', 528260: 'Metropolis', 197351: 'Alright', 523560: 'Gang Related', 526729: "I’m Gone", 528266: 'Soul Food', 544491: 'Nikki', 398797: 'Now', 528271: 'Buried Alive', 528304: 'Growing Pains III', 528306: 'Never Enough', 528275: 'Bounce', 519316: 'Under Pressure', 528311: 'Intro', 506780: 'Driving Ms. Daisy'},
         {
             2312800: "Young Jesus",
             2338721: "I Am the Greatest",
-            2338720: "Lord Willin'",
+            2338720: "Lord Willin’",
             2343638: "Lucidity (Scene)",
             2327079: "Like Woah",
             2343640: "The Incredible True Story",
