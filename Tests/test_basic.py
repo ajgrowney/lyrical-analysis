@@ -87,6 +87,7 @@ def runTests(json_input, context):
         ret_id = test_song_id("https://genius.com/"+songtest_input[i])
         retSongTest = TestSongObject(ret_id)
         songtest_output.append(retSongTest)
+    
     print("\n---------Song ID Testing---------")
     for i in range(len(songtest_input)):
         returned_id = songtest_output[i].returned_id
@@ -169,7 +170,7 @@ def runTests(json_input, context):
             print("Test Success: " + albumtest_input[i])
         else:
             failed_tests += 1
-            print("Test Failed: " + str(songids_expected[i]) + " vs " + str(returned_songids))
+            print("Test Failed: " + str(dict(set(songids_expected[i].items()) ^ set(returned_songids.items()))))
 
     # Testing Results Total
     print("\n---------Testing Results---------")

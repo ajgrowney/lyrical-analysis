@@ -31,47 +31,6 @@ if("verified_artists_path" in constants):
         print("Invalid Verified Artist Path")
 
 
-# Return: No return, only outputing song result
-def print_song_result(song_info):
-    if(verified_artists == False):
-        print("No verified artists to search with")
-        return
-    if str(song_info['primary_artist']['id']) in verified_artists:
-        try:
-            print("** Song: "+ song_info['title'] + "**")
-            print(song_info['primary_artist']['name'] + "\n")
-        except UnicodeEncodeError:
-            print("Unicode Error")
-
-# Param: artist_in- Integer representing the artist id to make an api call for
-# Return type: Object if valid response, Integer if error
-# Example: getArtistId(5)
-def getArtistId(artist_in):
-    res_obj = {
-        'alt_names': [],
-        'name': ""
-    }
-    url = genius_api_call['base']
-    headers = {'Authorization': 'Bearer ' + genius_api_call['token']}
-    try:
-        res = requests.get(url+'/artists/'+str(artist_in), headers=headers).json()
-        if res['meta']['status'] == 200:
-            if res['response']['artist']['is_verified']:
-                for a in res['response']['artist']['alternate_names']:
-                    res_obj['alt_names'].append(a)
-                res_obj['name'] = res['response']['artist']['name'] 
-                return res_obj
-            
-    except requests.exceptions.SSLError:
-        return artist_in
-    except requests.exceptions.HTTPError as errh:
-        print(errh)
-    except requests.exceptions.RetryError as erre:
-        print(erre)
-    return res_obj
-
-
-
 
 # Description: Supports two main calls as of now:
 # Song Search Analysis: takes in a song and artist, prints out top fifteen most used lyrics with option to exclude certain words
@@ -81,6 +40,7 @@ def getArtistId(artist_in):
 def main():
     arg_len = len(sys.argv)
     user_input = sys.argv
+    
     if arg_len == 3 and user_input[1] == 'findArtistId':
         url = genius_api_call['base']
         params = {'q': user_input[2]}
@@ -101,10 +61,6 @@ def main():
    
     elif arg_len == 2 and user_input[1] == "nlp":
        print(scrape_song("https://genius.com/Logic-run-it-lyrics").lyrics)
-    
-   # Testing Suite
-    elif arg_len == 2 and user_input[1] == 'runTests':
-        print("Testing has moved. To run tests: 'python Tests/test_basic.py'")
     
     # Must be improved or deleted
     elif arg_len == 5 and user_input[1] == 'artistId':
