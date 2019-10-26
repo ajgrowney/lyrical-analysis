@@ -38,3 +38,4 @@ class LyricObject:
     def __init__(self, _word = "", _tags = []):
         self.word = _word
         self.tags = _tags
+

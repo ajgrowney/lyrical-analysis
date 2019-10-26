@@ -1,3 +1,4 @@
+import sys
 import json
 import operator
 import requests
@@ -14,12 +15,11 @@ def lyric_analysis(song_lyrics):
     lyric_list = song_lyrics.split()
     [lyric.lower() for lyric in lyric_list]
     my_dict = {}
-    for item in lyric_list:
 
-        if item in my_dict and (item not in constants["ignore"]):
-            my_dict[item] += 1
-        else:
-            my_dict[item] = 1
+    for item in lyric_list:
+        if item in my_dict and (item not in constants["ignore"]): my_dict[item] += 1
+        else: my_dict[item] = 1
+    
     sorted_dict = sorted(my_dict.items(), key=operator.itemgetter(1), reverse=True)
     # top_results = sorted_dict[:15]  -- If you want top 15 results per song
     # --- For Individual Song Results ---
@@ -31,8 +31,9 @@ def lyric_analysis(song_lyrics):
     return sorted_dict
 
 
+
 # Param: url { String } - url of a song to scrape the lyrics from
-# Return: string that holds all the lyrics text
+# Return: { SongObject } - Song object contents of id, url, title, and lyrics
 def scrape_song(url):
     html_page = requests.get(url)
     inner_html = BeautifulSoup(html_page.text, 'html.parser') 
@@ -44,6 +45,7 @@ def scrape_song(url):
     # Get the song ID and Title
     metadata = inner_html.find("meta", itemprop="page_data")
     data = json.loads(metadata["content"])
+    
     song_id = data["song"]["id"]
     song_title = data["song"]["title"]
 
@@ -95,7 +97,13 @@ def scrape_album(url,lyric_map):
     
     except UnicodeEncodeError as e:
         print("Error",e)
+    
+    lyric_map = AddAlbumToGraph(returnAlbum,lyric_map)
+    return returnAlbum
 
+
+
+def AddAlbumToGraph(returnAlbum,lyric_map):
     # Get all song urls to scrape from the respective album page
     # song_pages = inner_html.findAll('a', {"class": 'u-display_block'}, href=True)
     # song_urls = [s["href"] for s in song_pages]
@@ -127,6 +135,6 @@ def scrape_album(url,lyric_map):
             # Adding lyric to individual album results
             returnAlbum.addLyricResult(res_key,res_val)
 
-    return returnAlbum
+    return lyric_map
 
 
