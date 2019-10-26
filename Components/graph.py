@@ -1,59 +1,90 @@
+import types
 import matplotlib.pyplot as plt
 from .node import ArtistNode
 from .functions import scrape_song, scrape_album
 
+class GraphMenuObj:
+    def __init__(self,choices = {}):
+        self.choices = {i+1:x for i,x in enumerate(choices.keys())}
+        self.actions = {i+1:y for i,y in enumerate(choices.values())}
+        self.num_choices = len(choices)
+    
+    # Description: Iterate through menu options displaying all to user
+    # Return: 
+    def run(self):
+        # Display Choices
+        for index,choice in self.choices.items():
+            print(str(index)+": "+choice)
+        try:
+            menuChoice = int(input("Please select: "))
+        except ValueError as v:
+            print("Invalid Input Type: use the corresponding number")
+            return "Try Again"
+        except KeyError as e:
+            print("Invalid Menu Choice")
+            return "Try Again"
+        if type(self.actions[menuChoice]) == types.FunctionType:
+            return self.actions[menuChoice](True)
+        else: return self.actions[menuChoice]()
+
 class GraphObj:
-    def __init__(self):
+    def __init__(self,initial_artists = []):
         # Map for the Artist Search Menu {name: id}
         self.artist_choices = {}        
         # Map to access specific nodes {id: NodeObject}
         self.node_map = {}
+        # Menu
+        self.menu = GraphMenuObj({
+            "View Artist Choice": self.ArtistMenu,
+            "View Word Choice": lambda x: self.WordMenu(x),
+            "Exit": self.ExitMenu
+        })
+        
         # Maps Song ID to Title {id: title}
         self.song_id_title = {}
+        for artist in initial_artists:
+            self.addToArtist(artist,True)
+
+    def ExitMenu(self): return "exit"
+    
+    def ArtistMenu(self):
+        selection = {}
+        for i,name in zip(range(1,len(self.artist_choices)+1),self.artist_choices):
+            selection[i] = name
+            print(i,name)
+        
+        choice = int(input("Select an artist: "))
+        artist = selection[choice]
+        if artist in self.artist_choices:
+            artist_id = self.artist_choices[artist]
+            actions_returned = self.node_map[artist_id].printDetails()
+            if actions_returned != None:
+                print("Search more:", actions_returned)
+                artist_data = {"id": artist_id, "album_paths": actions_returned}
+                self.addToArtist(artist_data,False)
+        else:
+            print("Artist ID not found")
+
+    def WordMenu(self,displayChart = False):
+        word = input("Type a word to search: ")
+        if word in self.node_map:
+            print(self.node_map[word].topArtistConnections())
+            print(self.node_map[word].song_references)
+            print(self.node_map[word].timeline)
+            if displayChart:
+                refs = self.node_map[word].song_references
+                chart = plt.bar(list(self.node_map[word].timeline.keys()), self.node_map[word].timeline.values(), color='g')
+                for rect, year in zip(chart, refs.keys()):
+                    height = rect.get_height()
+                    plt.text(rect.get_x() + rect.get_width()/2.0, height, ("\n".join((x[1] for x in (refs[year])))), ha='center', va='bottom')
+                plt.legend()
+                plt.show()
+        else:
+            print("Word not found. Try again")
 
     def mainMenuNav(self):
-        menuChoice = 0
-        menu = "\nMenu: Main Menu \n1: View Artist Details\n2: View Word Details\n3: Exit\n "
-
-        while(menuChoice != 3):
-            print(menu)
-            menuChoice = input("Please Select: ")
-            if menuChoice == '1':
-                i=1
-                selection = {}
-                for name in self.artist_choices:
-                    selection[str(i)] = name
-                    print(i,name)
-                    i += 1
-                
-                choice = input("Select an artist: ")
-                artist = selection[choice]
-                if artist in self.artist_choices:
-                    artist_id = self.artist_choices[artist]
-                    actions_returned = self.node_map[artist_id].printDetails()
-                    if actions_returned != None:
-                        print("Search more:", actions_returned)
-                        artist_data = {"id": artist_id, "album_paths": actions_returned}
-                        self.addToArtist(artist_data,False)
-                else:
-                    print("Artist ID not found")
-            elif menuChoice == '2':
-                word = input("Type a word to search: ")
-                if word in self.node_map:
-                    print(self.node_map[word].topArtistConnections())
-                    print(self.node_map[word].song_references)
-                    print(self.node_map[word].timeline)
-#                    refs = self.node_map[word].song_references
-#                    chart = plt.bar(list(self.node_map[word].timeline.keys()), self.node_map[word].timeline.values(), color='g')
-#                    for rect, year in zip(chart, refs.keys()):
-#                        height = rect.get_height()
-#                        plt.text(rect.get_x() + rect.get_width()/2.0, height, ("\n".join((x[1] for x in (refs[year])))), ha='center', va='bottom')
-#                    plt.legend()
-#                    plt.show()
-                else:
-                    print("Word not found. Try again")
-            elif menuChoice == '3':
-                return
+        ret = ""
+        while(ret != "exit"): ret = self.menu.run()
     
 
     def addToArtist(self, artist_input, new):
