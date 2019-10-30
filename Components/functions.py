@@ -3,9 +3,10 @@ import json
 import operator
 import requests
 from .constants import constants
+from .utilities import get_syllables, get_word_topics
 from bs4 import BeautifulSoup
 from .node import NodeInterface, ArtistNode, LyricNode
-from .objects import AlbumObject, SongObject
+from .objects import AlbumObject, SongObject, SongAnalysisObject
 from .artist_setup import artists_data
 
 # Param: song_lyrics { String } - string with all the song lyrics
@@ -30,6 +31,43 @@ def lyric_analysis(song_lyrics):
     #         print "Error on character"
     return sorted_dict
 
+# Param: song { SongObject } - 
+# Result: { SongAnalysisObject } - 
+def song_analysis(song):
+    analysis = SongAnalysisObject(song)
+    song_lyrics = song.lyrics.lower().replace(',','').replace('[','').replace(']','')
+    lyric_list = song_lyrics.split()
+    [lyric.lower() for lyric in lyric_list]
+
+    # Word Count
+    analysis.word_count = len(lyric_list)
+
+    # Count Number of Times Each Word is Used in the Song
+    word_counter = {}
+    for lyric in lyric_list:
+        if lyric in word_counter and (lyric not in constants["ignore"]): word_counter[lyric] += 1
+        else: word_counter[lyric] = 1
+    analysis.word_freq = word_counter
+
+    # Count the number of Times Topics were referenced in a song
+    topic_count = {}
+    for word, count in word_counter.items():
+        word_topics = get_word_topics(word)
+        for t in word_topics:
+            if t in topic_count: topic_count[t] += count
+            else: topic_count[t] = count
+    analysis.topic_refs = topic_count
+
+    # Count the syllables per word in the song
+    total_syllables = 0
+    for word, count in word_counter.items():
+        num_syllables = get_syllables(word)
+        total_syllables += (num_syllables*count)
+    analysis.syllables_per_word = total_syllables/float(analysis.word_count)
+    
+    return analysis
+
+    
 
 
 # Param: url { String } - url of a song to scrape the lyrics from
@@ -48,15 +86,16 @@ def scrape_song(url):
     
     song_id = data["song"]["id"]
     song_title = data["song"]["title"]
+    song_release_date = data["song"]["release_date"]
+    returnSong = SongObject(song_id,url,song_title,lyrics,song_release_date)
 
-    returnSong = SongObject(song_id,url,song_title,lyrics)
 
     return returnSong
 
 # Param: url { String } - album url to be scraped for song urls and then processed
 # Param: lyric_map { GraphObj } - graph containing current lyric and artist nodes
 # Return: { AlbumObject } - Album Object containing all the album's data and lyric results, Updated Graph Object
-def scrape_album(url,lyric_map):
+def scrape_album(url,lyric_map = None):
     returnAlbum = AlbumObject()
     html_page = requests.get(url)
     inner_html = BeautifulSoup(html_page.content, 'html.parser')
@@ -66,7 +105,12 @@ def scrape_album(url,lyric_map):
         # Scrape Album Metadata
         metadata = inner_html.find("meta", itemprop="page_data")
         data = json.loads(metadata["content"])
-        
+        print(data.keys())
+        print(data["album"].keys())
+
+        returnAlbum.title = data["album"]["name"]
+        returnAlbum.id = data["album"]["id"]
+
         # Get other albums as suggestions to search
         for album in data["other_albums_by_artist"]:
             alb_url = album["url"]
@@ -90,15 +134,14 @@ def scrape_album(url,lyric_map):
                         returnAlbum.features["unverified"][feat["id"]] = feat["name"]
         try:
             returnAlbum.release_year = data["album"]["release_date_components"]["year"]
+            returnAlbum.release_date = data["album"]["release_date"]
         except TypeError:
             returnAlbum.release_year = -1
-        returnAlbum.title = data["album"]["name"]
-        returnAlbum.id = data["album"]["id"]
     
     except UnicodeEncodeError as e:
         print("Error",e)
     
-    lyric_map = AddAlbumToGraph(returnAlbum,lyric_map)
+    if lyric_map: AddAlbumToGraph(returnAlbum,lyric_map)
     return returnAlbum
 
 

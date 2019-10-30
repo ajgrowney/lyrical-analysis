@@ -17,7 +17,4 @@ lines = lyrics.split('\n')
 regex = re.compile('\[*\]')
 lines = list(filter(lambda i: i !='' and not regex.search(i),lines))
 
-
-
-
 print(lines)

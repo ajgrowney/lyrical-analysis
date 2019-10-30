@@ -1,6 +1,6 @@
 test:
-	python Tests/test_basic.py 
+	python Tests.Integration/test_basic.py 
 artistMap:
-	python3 main.py artistMapInitial
+	python3 main.py mapSingle
 clean:
 	del /S *.pyc
