@@ -33,6 +33,7 @@ class SongAnalysisObject:
         self.songId = _songObject.id
         self.topic_refs = {}
         self.word_freq = {}
+        self.word_map = {}
         self.syllables_per_word = -1.0
         self.release_date = _songObject.release_date
         self.word_count = -1

@@ -35,18 +35,18 @@ def lyric_analysis(song_lyrics):
 # Result: { SongAnalysisObject } - 
 def song_analysis(song):
     analysis = SongAnalysisObject(song)
-    song_lyrics = song.lyrics.lower().replace(',','').replace('[','').replace(']','')
-    lyric_list = song_lyrics.split()
-    [lyric.lower() for lyric in lyric_list]
+    song_lines = song.lyrics.split('\n')
+    [[l.lower() for l in line] for line in song_lines]
 
     # Word Count
-    analysis.word_count = len(lyric_list)
+    analysis.word_count = len(song.lyrics.split())
 
     # Count Number of Times Each Word is Used in the Song
     word_counter = {}
-    for lyric in lyric_list:
-        if lyric in word_counter and (lyric not in constants["ignore"]): word_counter[lyric] += 1
-        else: word_counter[lyric] = 1
+    for line in song_lines:
+        for lyric in line:
+            if lyric in word_counter and (lyric not in constants["ignore"]): word_counter[lyric] += 1
+            else: word_counter[lyric] = 1
     analysis.word_freq = word_counter
 
     # Count the number of Times Topics were referenced in a song

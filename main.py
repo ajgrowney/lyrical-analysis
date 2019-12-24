@@ -8,6 +8,7 @@ import operator
 import sys
 import time
 import requests
+import re
 from Components.constants import constants
 from bs4 import BeautifulSoup
 from Components.node import NodeInterface, ArtistNode, LyricNode
@@ -49,11 +50,15 @@ def main():
     elif arg_len == 2 and user_input[1] == "nlp":
         song = scrape_song("https://genius.com/Logic-run-it-lyrics")
         analysis = song_analysis(song)
-        print(analysis.word_freq)
+        print(analysis.word_map)
     
     elif arg_len == 2 and user_input[1] == "scrapeAlbum":
         alb = scrape_album("https://genius.com/albums/Rush/Signals")
         print(alb.song_urls)
+    elif arg_len == 2 and user_input[1] == "scrapeSong":
+        song = scrape_song("https://genius.com/Black-star-respiration-lyrics")
+        lines = song.lyrics.split('\n')
+        print(lines)
 
     
     elif arg_len == 3 and user_input[1] == 'findArtistId':
