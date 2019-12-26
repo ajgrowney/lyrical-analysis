@@ -2,6 +2,7 @@ import sys
 import json
 import operator
 import requests
+import re
 from .constants import constants
 from .utilities import get_syllables, get_word_topics
 from bs4 import BeautifulSoup
@@ -31,22 +32,86 @@ def lyric_analysis(song_lyrics):
     #         print "Error on character"
     return sorted_dict
 
+def check_section(line: str):
+    return re.search("^\[", line)
+
+
 # Param: song { SongObject } - 
 # Result: { SongAnalysisObject } - 
-def song_analysis(song):
+def new_song_analysis(song):
     analysis = SongAnalysisObject(song)
     song_lines = song.lyrics.split('\n')
-    [[l.lower() for l in line] for line in song_lines]
 
     # Word Count
     analysis.word_count = len(song.lyrics.split())
 
     # Count Number of Times Each Word is Used in the Song
     word_counter = {}
+    map_builder = {}
+    word_num, line_num = 0, 0 
     for line in song_lines:
-        for lyric in line:
-            if lyric in word_counter and (lyric not in constants["ignore"]): word_counter[lyric] += 1
-            else: word_counter[lyric] = 1
+        if check_section(str(line)):
+            print("Tag:",line)
+        else:
+            line.replace('[','').replace(']','')
+            line = line.split(' ')
+            line_word_num = 0
+            for lyric in line:
+                lyric = lyric.lower()
+                if lyric != "":
+                    # Old
+                    if lyric in word_counter and (lyric not in constants["ignore"]): word_counter[lyric] += 1
+                    else: word_counter[lyric] = 1
+
+                    # New
+                    location = (word_num, line_num, line_word_num)
+                    if lyric in map_builder: map_builder[lyric].append(location)
+                    else: map_builder[lyric] = [location]
+
+                    line_word_num += 1
+                    word_num += 1
+            line_num += 1
+
+
+    analysis.word_freq = word_counter
+    analysis.word_map = map_builder
+
+    # Count the number of Times Topics were referenced in a song
+    topic_count = {}
+    for word, count in word_counter.items():
+        word_topics = get_word_topics(word)
+        for t in word_topics:
+            if t in topic_count: topic_count[t] += count
+            else: topic_count[t] = count
+    analysis.topic_refs = topic_count
+
+    # Count the syllables per word in the song
+    total_syllables = 0
+    for word, count in word_counter.items():
+        num_syllables = get_syllables(word)
+        total_syllables += (num_syllables*count)
+    analysis.syllables_per_word = total_syllables/float(analysis.word_count)
+    
+    return analysis   
+
+
+# Param: song { SongObject } - 
+# Result: { SongAnalysisObject } - 
+def song_analysis(song):
+    analysis = SongAnalysisObject(song)
+    song_lyrics = song.lyrics.lower().replace(',','').replace('[','').replace(']','')
+    lyric_list = song_lyrics.split()
+    [lyric.lower() for lyric in lyric_list]
+
+    # Word Count
+    analysis.word_count = len(song.lyrics.split())
+
+    # Count Number of Times Each Word is Used in the Song
+    word_counter = {}
+    for lyric in lyric_list:
+        # Old
+        if lyric in word_counter and (lyric not in constants["ignore"]): word_counter[lyric] += 1
+        else: word_counter[lyric] = 1
     analysis.word_freq = word_counter
 
     # Count the number of Times Topics were referenced in a song

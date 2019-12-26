@@ -15,7 +15,7 @@ from Components.node import NodeInterface, ArtistNode, LyricNode
 from Components.graph import GraphObj, GraphMenuObj
 from Components.objects import AlbumObject, SongObject
 from Components.artist_setup import artists_data
-from Components.functions import scrape_song, scrape_album, song_analysis
+from Components.functions import scrape_song, scrape_album, song_analysis, new_song_analysis
 
 genius_api_call = {
     'token': constants["apikey"],
@@ -48,8 +48,8 @@ def main():
         lyrical_map.mainMenuNav()
 
     elif arg_len == 2 and user_input[1] == "nlp":
-        song = scrape_song("https://genius.com/Logic-run-it-lyrics")
-        analysis = song_analysis(song)
+        song = scrape_song("https://genius.com/Black-star-respiration-lyrics")
+        analysis = new_song_analysis(song)
         print(analysis.word_map)
     
     elif arg_len == 2 and user_input[1] == "scrapeAlbum":
