@@ -49,9 +49,12 @@ def new_song_analysis(song):
     word_counter = {}
     map_builder = {}
     word_num, line_num = 0, 0 
+    cur_tag = ""
     for line in song_lines:
         if check_section(str(line)):
             print("Tag:",line)
+            tag = line.replace('[','').replace(']','')
+            cur_tag = tag[:tag.find(':')]
         else:
             line.replace('[','').replace(']','')
             line = line.split(' ')
@@ -59,12 +62,13 @@ def new_song_analysis(song):
             for lyric in line:
                 lyric = lyric.lower()
                 if lyric != "":
+                    location = (word_num, line_num, line_word_num, cur_tag)
+
                     # Old
                     if lyric in word_counter and (lyric not in constants["ignore"]): word_counter[lyric] += 1
                     else: word_counter[lyric] = 1
 
                     # New
-                    location = (word_num, line_num, line_word_num)
                     if lyric in map_builder: map_builder[lyric].append(location)
                     else: map_builder[lyric] = [location]
 
